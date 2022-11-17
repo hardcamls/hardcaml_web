@@ -1,0 +1,5 @@
+(library
+ (name hardcaml_web)
+ (libraries base brr hardcaml hardcaml_waveterm zarith_stubs_js)
+ (preprocess (pps ppx_jane ppx_deriving_hardcaml))
+)

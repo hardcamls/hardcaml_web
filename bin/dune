@@ -1,0 +1,6 @@
+(executable
+ (name webapp)
+ (libraries core brr hardcaml zarith_stubs_js)
+ (modes js)
+ (promote)
+ (preprocess (pps ppx_jane)))
