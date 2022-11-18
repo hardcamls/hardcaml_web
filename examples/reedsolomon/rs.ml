@@ -13,25 +13,10 @@ let default_parameters =
     ]
 ;;
 
-module Make (P : Design.Parameters) = struct
-  let n =
-    List.Assoc.find_exn ~equal:String.equal P.parameters "n"
-    |> Parameter.int
-    |> Option.value_exn
-  ;;
-
-  let t =
-    List.Assoc.find_exn ~equal:String.equal P.parameters "t"
-    |> Parameter.int
-    |> Option.value_exn
-  ;;
-
-  let parallelism =
-    List.Assoc.find_exn ~equal:String.equal P.parameters "parallelism"
-    |> Parameter.int
-    |> Option.value_exn
-  ;;
-
+module Make (P : Parameters.S) = struct
+  let n = Parameters.as_int_exn P.parameters "n"
+  let t = Parameters.as_int_exn P.parameters "t"
+  let parallelism = Parameters.as_int_exn P.parameters "parallelism"
   let k = n - (2 * t)
   let b = 0
   let m = Int.ceil_log2 (n + 1)

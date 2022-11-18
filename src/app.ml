@@ -170,13 +170,17 @@ module Make (Design : Design.S) = struct
     El.set_children div [ El.pre [ El.txt' (Buffer.contents buffer) ] ]
   ;;
 
+  let background colour =
+    At.v (Jstr.v "style") (Jstr.v ("background:#" ^ Printf.sprintf "%.6x" colour))
+  ;;
+
   let run_app div_app =
     let parameters, parameter_table = parameters () in
-    let div_parameters = El.div [ parameter_table ] in
-    let div_utilization = El.div [] in
-    let div_ports = El.div [] in
+    let div_parameters = El.div ~at:[ background 0xf8f8f8 ] [ parameter_table ] in
+    let div_utilization = El.div ~at:[ background 0xf0f0f0 ] [] in
+    let div_ports = El.div ~at:[ background 0xe8e8e8 ] [] in
     let div_simulate = El.div [] in
-    let div_rtl = El.div [] in
+    let div_rtl = El.div ~at:[ background 0xe0e0e0 ] [] in
     let generate_circuit_utilization_button = El.button [ El.txt' "Utilization" ] in
     let ports_button = El.button [ El.txt' "Ports" ] in
     let simulate_button = El.button [ El.txt' "Simulate" ] in

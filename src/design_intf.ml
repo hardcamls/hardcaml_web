@@ -1,17 +1,9 @@
 open Base
-
-type parameters = (String.t, Parameter.t) List.Assoc.t
-
 open Hardcaml
-
-(** Parameter supplied by user. *)
-module type Parameters = sig
-  val parameters : parameters
-end
 
 module type S = sig
   (** Parameters expected by the design and it's testbench(es) *)
-  val default_parameters : parameters
+  val default_parameters : Parameters.t
 
   (** Page title *)
   val title : string
@@ -19,7 +11,7 @@ module type S = sig
   (** Top level module name *)
   val top_level_name : string
 
-  module Make (P : Parameters) : sig
+  module Make (P : Parameters.S) : sig
     module I : Interface.S
     module O : Interface.S
 

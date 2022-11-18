@@ -14,30 +14,11 @@ let default_parameters =
     ]
 ;;
 
-module Make (P : Design.Parameters) = struct
-  let data_width =
-    List.Assoc.find_exn ~equal:String.equal P.parameters "data_width"
-    |> Parameter.int
-    |> Option.value_exn
-  ;;
-
-  let coef_width =
-    List.Assoc.find_exn ~equal:String.equal P.parameters "coef_width"
-    |> Parameter.int
-    |> Option.value_exn
-  ;;
-
-  let result_width =
-    List.Assoc.find_exn ~equal:String.equal P.parameters "result_width"
-    |> Parameter.int
-    |> Option.value_exn
-  ;;
-
-  let num_taps =
-    List.Assoc.find_exn ~equal:String.equal P.parameters "num_taps"
-    |> Parameter.int
-    |> Option.value_exn
-  ;;
+module Make (P : Parameters.S) = struct
+  let data_width = Parameters.as_int_exn P.parameters "data_width"
+  let coef_width = Parameters.as_int_exn P.parameters "coef_width"
+  let result_width = Parameters.as_int_exn P.parameters "result_width"
+  let num_taps = Parameters.as_int_exn P.parameters "num_taps"
 
   module I = struct
     type 'a t =
