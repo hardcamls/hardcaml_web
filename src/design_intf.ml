@@ -13,6 +13,12 @@ module type S = sig
   (** Parameters expected by the design and it's testbench(es) *)
   val default_parameters : parameters
 
+  (** Page title *)
+  val title : string
+
+  (** Top level module name *)
+  val top_level_name : string
+
   module Make (P : Parameters) : sig
     module I : Interface.S
     module O : Interface.S

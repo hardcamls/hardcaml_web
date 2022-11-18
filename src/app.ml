@@ -129,7 +129,7 @@ module Make (Design : Design.S) = struct
     in
     let module Circuit = Hardcaml.Circuit.With_interface (D.I) (D.O) in
     let scope = Hardcaml.Scope.create ~flatten_design:true () in
-    let circ = Circuit.create_exn ~name:"design" (D.create scope) in
+    let circ = Circuit.create_exn ~name:Design.top_level_name (D.create scope) in
     let utilization = Hardcaml.Circuit_utilization.create circ in
     El.set_children div [ table_of_utilization utilization ]
   ;;
@@ -142,7 +142,13 @@ module Make (Design : Design.S) = struct
     in
     let waveform = Option.map D.testbench ~f:(fun testbench -> testbench ()) in
     Option.iter waveform ~f:(fun waveform ->
-      let buf = Hardcaml_waveterm.Waveform.to_buffer waveform in
+      let buf =
+        Hardcaml_waveterm.Waveform.to_buffer
+          ~display_width:120
+          ~display_height:35
+          ~wave_width:2
+          waveform
+      in
       El.set_children div [ El.pre [ El.txt' (Buffer.contents buf) ] ])
   ;;
 
@@ -154,7 +160,7 @@ module Make (Design : Design.S) = struct
     in
     let module Circuit = Hardcaml.Circuit.With_interface (D.I) (D.O) in
     let scope = Hardcaml.Scope.create () in
-    let circ = Circuit.create_exn ~name:"design" (D.create scope) in
+    let circ = Circuit.create_exn ~name:Design.top_level_name (D.create scope) in
     let buffer = Buffer.create 1024 in
     Hardcaml.Rtl.output
       ~database:(Hardcaml.Scope.circuit_database scope)
@@ -191,7 +197,7 @@ module Make (Design : Design.S) = struct
     Ev.listen Ev.click (generate_rtl parameters div_rtl) (El.as_target rtl_button);
     El.set_children
       div_app
-      [ El.txt' "Welcome to the baby hardcaml application"
+      [ El.h1 [ El.txt' Design.title ]
       ; div_parameters
       ; div_control
       ; div_utilization

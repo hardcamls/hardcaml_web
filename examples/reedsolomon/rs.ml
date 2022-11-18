@@ -2,6 +2,9 @@ open! Base
 open! Hardcaml
 open Hardcaml_web
 
+let title = "Hardcaml Reed-solomon Decoder"
+let top_level_name = "rsdecoder"
+
 let default_parameters =
   Parameter.
     [ "n", { typ = Int 15; description = "Code word size" }
