@@ -28,14 +28,14 @@ module Make (P : Design.Parameters) = struct
     type 'a t = { q : 'a [@bits data_width] } [@@deriving sexp_of, hardcaml]
   end
 
-  let create (i : _ I.t) =
+  let create _scope (i : _ I.t) =
     let q = Hardcaml.Signal.reg (Hardcaml.Reg_spec.create ~clock:i.clock ()) i.d in
     { O.q }
   ;;
 
   let testbench () =
     let module Sim = Cyclesim.With_interface (I) (O) in
-    let sim = Sim.create create in
+    let sim = Sim.create (create (Scope.create ())) in
     let waves, sim = Hardcaml_waveterm.Waveform.create sim in
     Cyclesim.reset sim;
     waves

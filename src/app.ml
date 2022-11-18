@@ -48,49 +48,90 @@ module Make (Design : Design.S) = struct
     get, table
   ;;
 
-  let table_of_ports (module I : Hardcaml.Interface.S) =
-    List.map (I.to_list I.t) ~f:(fun (name, width) ->
+  let generate_ports parameters div _ =
+    let module D =
+      Design.Make (struct
+        let parameters = parameters ()
+      end)
+    in
+    let port (name, width) =
       El.tr
-        (List.map [ El.txt' name; El.txt (Jstr.of_int width) ] ~f:(fun d -> El.td [ d ])))
-    |> El.table
-  ;;
-
-  let ports_of_interface (module I : Hardcaml.Interface.S) div =
-    let ports = table_of_ports (module I) in
-    El.set_children div [ ports ]
-  ;;
-
-  let generate_inputs parameters div _ =
-    let module D =
-      Design.Make (struct
-        let parameters = parameters ()
-      end)
+        (List.map [ El.txt' name; El.txt (Jstr.of_int width) ] ~f:(fun d -> El.td [ d ]))
     in
-    ports_of_interface (module D.I) div
-  ;;
-
-  let generate_outputs parameters div _ =
-    let module D =
-      Design.Make (struct
-        let parameters = parameters ()
-      end)
+    let inputs = List.map (D.I.to_list D.I.t) ~f:port in
+    let outputs = List.map (D.O.to_list D.O.t) ~f:port in
+    let table =
+      El.table
+        (List.concat
+           [ [ El.th [ El.txt' "inputs" ] ]
+           ; inputs
+           ; [ El.th [ El.txt' "outputs" ] ]
+           ; outputs
+           ])
     in
-    ports_of_interface (module D.O) div
+    El.set_children div [ table ]
   ;;
 
-  let generate_circuit parameters div _ =
+  let table_of_utilization (u : Hardcaml.Circuit_utilization.t) =
+    let tr f op x = El.tr [ El.td [ El.txt' op ]; El.td [ El.txt' (f x) ] ] in
+    let total_and_max_bits
+      ({ count; total_bits; max_instance_bits } :
+        Hardcaml.Circuit_utilization.Total_and_max_bits.t)
+      =
+      Printf.sprintf
+        "count=%i, total bits=%i, max bits=%i"
+        count
+        total_bits
+        max_instance_bits
+    in
+    let total_bits ({ count; total_bits } : Hardcaml.Circuit_utilization.Total_bits.t) =
+      Printf.sprintf "count=%i, total bits=%i" count total_bits
+    in
+    let muxes
+      ({ count; total_bits; multiplexers = _ } :
+        Hardcaml.Circuit_utilization.Multiplexers.t)
+      =
+      Printf.sprintf "count=%i, total_bits=%i" count total_bits
+    in
+    let mems
+      ({ count; total_bits; memories = _ } : Hardcaml.Circuit_utilization.Memories.t)
+      =
+      Printf.sprintf "count=%i, total_bits=%i" count total_bits
+    in
+    let els =
+      List.filter_opt
+        [ Option.map u.adders ~f:(tr total_and_max_bits "(+:)")
+        ; Option.map u.subtractors ~f:(tr total_and_max_bits "(-:)")
+        ; Option.map u.unsigned_multipliers ~f:(tr total_and_max_bits "(*:)")
+        ; Option.map u.signed_multipliers ~f:(tr total_and_max_bits "(*+)")
+        ; Option.map u.and_gates ~f:(tr total_bits "(&:)")
+        ; Option.map u.or_gates ~f:(tr total_bits "(|:)")
+        ; Option.map u.xor_gates ~f:(tr total_bits "(^:)")
+        ; Option.map u.not_gates ~f:(tr total_bits "(~:)")
+        ; Option.map u.equals ~f:(tr total_and_max_bits "(==:)")
+        ; Option.map u.comparators ~f:(tr total_and_max_bits "(<:)")
+        ; Option.map u.multiplexers ~f:(tr muxes "mux")
+        ; Option.map u.registers ~f:(tr total_bits "reg")
+        ; Option.map u.memories ~f:(tr mems "mems")
+        ; Option.map u.constants ~f:(tr total_bits "const")
+        ; Option.map u.wires ~f:(tr total_bits "wire")
+        ; Option.map u.part_selects ~f:(tr total_bits "select")
+        ]
+    in
+    El.table els
+  ;;
+
+  let generate_circuit_utilization parameters div _ =
     let module D =
       Design.Make (struct
         let parameters = parameters ()
       end)
     in
     let module Circuit = Hardcaml.Circuit.With_interface (D.I) (D.O) in
-    let circ = Circuit.create_exn ~name:"design" D.create in
+    let scope = Hardcaml.Scope.create ~flatten_design:true () in
+    let circ = Circuit.create_exn ~name:"design" (D.create scope) in
     let utilization = Hardcaml.Circuit_utilization.create circ in
-    let results =
-      Sexp.to_string_hum (Hardcaml.Circuit_utilization.sexp_of_t utilization)
-    in
-    El.set_children div [ El.txt' results ]
+    El.set_children div [ table_of_utilization utilization ]
   ;;
 
   let simulate_circuit parameters div _ =
@@ -105,45 +146,58 @@ module Make (Design : Design.S) = struct
       El.set_children div [ El.pre [ El.txt' (Buffer.contents buf) ] ])
   ;;
 
+  let generate_rtl parameters div _ =
+    let module D =
+      Design.Make (struct
+        let parameters = parameters ()
+      end)
+    in
+    let module Circuit = Hardcaml.Circuit.With_interface (D.I) (D.O) in
+    let scope = Hardcaml.Scope.create () in
+    let circ = Circuit.create_exn ~name:"design" (D.create scope) in
+    let buffer = Buffer.create 1024 in
+    Hardcaml.Rtl.output
+      ~database:(Hardcaml.Scope.circuit_database scope)
+      ~output_mode:(To_buffer buffer)
+      Verilog
+      circ;
+    El.set_children div [ El.pre [ El.txt' (Buffer.contents buffer) ] ]
+  ;;
+
   let run_app div_app =
     let parameters, parameter_table = parameters () in
     let div_parameters = El.div [ parameter_table ] in
     let div_utilization = El.div [] in
-    let div_inputs = El.div [] in
-    let div_outputs = El.div [] in
+    let div_ports = El.div [] in
     let div_simulate = El.div [] in
-    let generate_circuit_button = El.button [ El.txt' "Circuit" ] in
-    let inputs_button = El.button [ El.txt' "Inputs" ] in
-    let outputs_button = El.button [ El.txt' "Outputs" ] in
+    let div_rtl = El.div [] in
+    let generate_circuit_utilization_button = El.button [ El.txt' "Utilization" ] in
+    let ports_button = El.button [ El.txt' "Ports" ] in
     let simulate_button = El.button [ El.txt' "Simulate" ] in
+    let rtl_button = El.button [ El.txt' "Rtl" ] in
     let div_control =
-      El.div [ generate_circuit_button; inputs_button; outputs_button; simulate_button ]
+      El.div
+        [ generate_circuit_utilization_button; ports_button; simulate_button; rtl_button ]
     in
     Ev.listen
       Ev.click
-      (generate_circuit parameters div_utilization)
-      (El.as_target generate_circuit_button);
-    Ev.listen
-      Ev.click
-      (generate_inputs parameters div_inputs)
-      (El.as_target inputs_button);
-    Ev.listen
-      Ev.click
-      (generate_outputs parameters div_outputs)
-      (El.as_target outputs_button);
+      (generate_circuit_utilization parameters div_utilization)
+      (El.as_target generate_circuit_utilization_button);
+    Ev.listen Ev.click (generate_ports parameters div_ports) (El.as_target ports_button);
     Ev.listen
       Ev.click
       (simulate_circuit parameters div_simulate)
       (El.as_target simulate_button);
+    Ev.listen Ev.click (generate_rtl parameters div_rtl) (El.as_target rtl_button);
     El.set_children
       div_app
       [ El.txt' "Welcome to the baby hardcaml application"
       ; div_parameters
       ; div_control
       ; div_utilization
-      ; div_inputs
-      ; div_outputs
+      ; div_ports
       ; div_simulate
+      ; div_rtl
       ]
   ;;
 

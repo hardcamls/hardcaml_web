@@ -1,0 +1,7 @@
+(executables
+ (names hardcaml_app hardcaml_worker)
+ (modes js)
+ (promote)
+ (libraries hardcaml_web reedsolomon.hardcaml)
+ (preprocess (pps ppx_jane ppx_deriving_hardcaml))
+)

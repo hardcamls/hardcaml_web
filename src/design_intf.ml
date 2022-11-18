@@ -18,7 +18,7 @@ module type S = sig
     module O : Interface.S
 
     (** Construct the design for the given parameters *)
-    val create : Signal.t Interface.Create_fn(I)(O).t
+    val create : Scope.t -> Signal.t Interface.Create_fn(I)(O).t
 
     (** Run a testbench (work out an appropriate return type...) *)
     val testbench : (unit -> Hardcaml_waveterm.Waveform.t) option
