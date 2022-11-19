@@ -24,11 +24,15 @@ let string { typ; description = _ } =
   | _ -> None
 ;;
 
+let string_exn t = string t |> Option.value_exn
+
 let int { typ; description = _ } =
   match typ with
   | Typ.Int i -> Some i
   | _ -> None
 ;;
+
+let int_exn t = int t |> Option.value_exn
 
 let flag { typ; description = _ } =
   match typ with
@@ -36,8 +40,12 @@ let flag { typ; description = _ } =
   | _ -> None
 ;;
 
+let flag_exn t = flag t |> Option.value_exn
+
 let symbol { typ; description = _ } =
   match typ with
   | Typ.Symbol { value; _ } -> Some value
   | _ -> None
 ;;
+
+let symbol_exn t = symbol t |> Option.value_exn

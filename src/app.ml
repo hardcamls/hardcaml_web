@@ -12,7 +12,7 @@ module Make (Design : Design.S) = struct
     El.set_at (Jstr.v "type") (Some (Jstr.v "number")) e;
     El.set_at
       (Jstr.v "value")
-      (Some (Jstr.v (Int.to_string (Parameter.int default |> Option.value_exn))))
+      (Some (Jstr.v (Int.to_string (Parameter.int_exn default))))
       e;
     e, fun () -> { default with typ = Int (v ()) }
   ;;
@@ -22,11 +22,15 @@ module Make (Design : Design.S) = struct
     let e = El.input () in
     let v () = El.prop El.Prop.value e |> Jstr.to_string in
     El.set_at (Jstr.v "type") (Some (Jstr.v "text")) e;
-    El.set_at
-      (Jstr.v "value")
-      (Some (Jstr.v (Parameter.string default |> Option.value_exn)))
-      e;
+    El.set_at (Jstr.v "value") (Some (Jstr.v (Parameter.string_exn default))) e;
     e, fun () -> { default with typ = String (v ()) }
+  ;;
+
+  let flag_input (default : Parameter.t) =
+    let e = El.input () in
+    El.set_at (Jstr.v "type") (Some (Jstr.v "checkbox")) e;
+    El.set_prop El.Prop.checked (Parameter.flag_exn default) e;
+    e, fun () -> { default with typ = Flag (El.prop El.Prop.checked e) }
   ;;
 
   (* Create a table for the parameter, and return and accessor function. *)
@@ -37,7 +41,7 @@ module Make (Design : Design.S) = struct
           match typ with
           | String _ -> string_input p
           | Int _ -> int_input p
-          | Flag _ -> El.txt' "TODO flag", fun () -> p
+          | Flag _ -> flag_input p
           | Symbol _ -> El.txt' "TODO symbol", fun () -> p
         in
         let row = List.map [ El.txt' description; value_ ] ~f:(fun e -> El.td [ e ]) in
@@ -140,16 +144,37 @@ module Make (Design : Design.S) = struct
         let parameters = parameters ()
       end)
     in
-    let waveform = Option.map D.testbench ~f:(fun testbench -> testbench ()) in
-    Option.iter waveform ~f:(fun waveform ->
-      let buf =
-        Hardcaml_waveterm.Waveform.to_buffer
-          ~display_width:120
-          ~display_height:35
-          ~wave_width:2
-          waveform
+    match D.testbench with
+    | None -> ()
+    | Some testbench ->
+      let result = testbench () in
+      let waves =
+        Option.map result.waves ~f:(fun { waves; options; rules } ->
+          let display_width = Option.map options ~f:(fun o -> o.display_width) in
+          let display_height = Option.map options ~f:(fun o -> o.display_height) in
+          let start_cycle = Option.map options ~f:(fun o -> o.start_cycle) in
+          let wave_width = Option.map options ~f:(fun o -> o.wave_width) in
+          let display_rules = rules in
+          El.div
+            [ El.pre
+                [ El.txt'
+                    (Hardcaml_waveterm.Waveform.to_buffer
+                       ?display_width
+                       ?display_height
+                       ?wave_width
+                       ?start_cycle
+                       ?display_rules
+                       waves
+                    |> Buffer.contents)
+                ]
+            ])
       in
-      El.set_children div [ El.pre [ El.txt' (Buffer.contents buf) ] ])
+      let result =
+        Option.map result.result ~f:(function
+          | Text t -> El.div [ El.txt' t ]
+          | Brr_el el -> El.div [ el ])
+      in
+      El.set_children div (List.filter_opt [ waves; result ])
   ;;
 
   let generate_rtl parameters div _ =

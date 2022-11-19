@@ -19,6 +19,6 @@ module type S = sig
     val create : Scope.t -> Signal.t Interface.Create_fn(I)(O).t
 
     (** Run a testbench (work out an appropriate return type...) *)
-    val testbench : (unit -> Hardcaml_waveterm.Waveform.t) option
+    val testbench : (unit -> Testbench_result.t) option
   end
 end
