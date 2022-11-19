@@ -58,68 +58,84 @@ module Make (Design : Design.S) = struct
         let parameters = parameters ()
       end)
     in
+    let tdc txt =
+      let at = [ At.v (Jstr.v "style") (Jstr.v "text-align:center") ] in
+      let t = El.td ~at [ txt ] in
+      t
+    in
     let port (name, width) =
-      El.tr
-        (List.map [ El.txt' name; El.txt (Jstr.of_int width) ] ~f:(fun d -> El.td [ d ]))
+      El.tr (List.map [ El.txt' name; El.txt (Jstr.of_int width) ] ~f:(fun d -> tdc d))
     in
     let inputs = List.map (D.I.to_list D.I.t) ~f:port in
     let outputs = List.map (D.O.to_list D.O.t) ~f:port in
     let table =
+      let span2 = At.v (Jstr.v "colspan") (Jstr.of_int 2) in
       El.table
-        (List.concat
-           [ [ El.th [ El.txt' "inputs" ] ]
-           ; inputs
-           ; [ El.th [ El.txt' "outputs" ] ]
-           ; outputs
-           ])
+        ([ [ El.tr [ El.th ~at:[ span2 ] [ El.txt' "inputs" ] ] ]
+         ; [ El.tr [ El.th [ El.txt' "name" ]; El.th [ El.txt' "width" ] ] ]
+         ; inputs
+         ; [ El.tr [ El.th ~at:[ span2 ] [ El.txt' "outputs" ] ] ]
+         ; [ El.tr [ El.th [ El.txt' "name" ]; El.th [ El.txt' "width" ] ] ]
+         ; outputs
+         ]
+        |> List.concat)
     in
     El.set_children div [ table ]
   ;;
 
   let table_of_utilization (u : Hardcaml.Circuit_utilization.t) =
-    let tr f op x = El.tr [ El.td [ El.txt' op ]; El.td [ El.txt' (f x) ] ] in
+    let tdc x =
+      let at = [ At.v (Jstr.v "style") (Jstr.v "text-align:center") ] in
+      let t = El.td ~at [ El.txt (Jstr.of_int x) ] in
+      t
+    in
+    let tdn = El.td [] in
+    let tr f op x = El.tr (El.th [ El.txt' op ] :: f x) in
     let total_and_max_bits
       ({ count; total_bits; max_instance_bits } :
         Hardcaml.Circuit_utilization.Total_and_max_bits.t)
       =
-      Printf.sprintf
-        "count=%i, total bits=%i, max bits=%i"
-        count
-        total_bits
-        max_instance_bits
+      [ tdc count; tdc total_bits; tdc max_instance_bits ]
     in
     let total_bits ({ count; total_bits } : Hardcaml.Circuit_utilization.Total_bits.t) =
-      Printf.sprintf "count=%i, total bits=%i" count total_bits
+      [ tdc count; tdc total_bits; tdn ]
     in
     let muxes
       ({ count; total_bits; multiplexers = _ } :
         Hardcaml.Circuit_utilization.Multiplexers.t)
       =
-      Printf.sprintf "count=%i, total_bits=%i" count total_bits
+      [ tdc count; tdc total_bits; tdn ]
     in
     let mems
       ({ count; total_bits; memories = _ } : Hardcaml.Circuit_utilization.Memories.t)
       =
-      Printf.sprintf "count=%i, total_bits=%i" count total_bits
+      [ tdc count; tdc total_bits; tdn ]
     in
     let els =
       List.filter_opt
-        [ Option.map u.adders ~f:(tr total_and_max_bits "(+:)")
-        ; Option.map u.subtractors ~f:(tr total_and_max_bits "(-:)")
-        ; Option.map u.unsigned_multipliers ~f:(tr total_and_max_bits "(*:)")
-        ; Option.map u.signed_multipliers ~f:(tr total_and_max_bits "(*+)")
-        ; Option.map u.and_gates ~f:(tr total_bits "(&:)")
-        ; Option.map u.or_gates ~f:(tr total_bits "(|:)")
-        ; Option.map u.xor_gates ~f:(tr total_bits "(^:)")
-        ; Option.map u.not_gates ~f:(tr total_bits "(~:)")
-        ; Option.map u.equals ~f:(tr total_and_max_bits "(==:)")
-        ; Option.map u.comparators ~f:(tr total_and_max_bits "(<:)")
-        ; Option.map u.multiplexers ~f:(tr muxes "mux")
-        ; Option.map u.registers ~f:(tr total_bits "reg")
-        ; Option.map u.memories ~f:(tr mems "mems")
-        ; Option.map u.constants ~f:(tr total_bits "const")
-        ; Option.map u.wires ~f:(tr total_bits "wire")
-        ; Option.map u.part_selects ~f:(tr total_bits "select")
+        [ Some
+            (El.tr
+               [ El.th [ El.txt' "op" ]
+               ; El.th [ El.txt' "count" ]
+               ; El.th [ El.txt' "total bits" ]
+               ; El.th [ El.txt' "max bits" ]
+               ])
+        ; Option.map u.adders ~f:(tr total_and_max_bits "adders")
+        ; Option.map u.subtractors ~f:(tr total_and_max_bits "subtractors")
+        ; Option.map u.unsigned_multipliers ~f:(tr total_and_max_bits "unsigned mult")
+        ; Option.map u.signed_multipliers ~f:(tr total_and_max_bits "signed mult")
+        ; Option.map u.and_gates ~f:(tr total_bits "and gates")
+        ; Option.map u.or_gates ~f:(tr total_bits "or gates")
+        ; Option.map u.xor_gates ~f:(tr total_bits "xor gates")
+        ; Option.map u.not_gates ~f:(tr total_bits "not gates")
+        ; Option.map u.equals ~f:(tr total_and_max_bits "equality")
+        ; Option.map u.comparators ~f:(tr total_and_max_bits "comparators")
+        ; Option.map u.multiplexers ~f:(tr muxes "multiplexors")
+        ; Option.map u.registers ~f:(tr total_bits "registers")
+        ; Option.map u.memories ~f:(tr mems "memoriess")
+        ; Option.map u.constants ~f:(tr total_bits "constants")
+        ; Option.map u.wires ~f:(tr total_bits "wires")
+        ; Option.map u.part_selects ~f:(tr total_bits "part selects")
         ]
     in
     El.table els
