@@ -86,6 +86,8 @@ let rec render_wave (wave : Hardcaml_waveterm.Expert.Wave.t) =
 ;;
 
 let render (waveform : Hardcaml_waveterm.Waveform.t) =
+  let open El in
   let waves = Hardcaml_waveterm.Waveform.waves waveform in
-  Array.to_list waves |> List.filter_map ~f:render_wave |> El.table
+  let rows = Array.to_list waves |> List.filter_map ~f:render_wave in
+  table [ thead [ th [ txt' "Signals" ]; th [ txt' "Waves" ] ]; tbody rows ]
 ;;
