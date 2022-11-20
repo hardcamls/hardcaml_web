@@ -53,6 +53,18 @@ let render_helper ~name ~f =
   El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
 ;;
 
+(* XXX fyquah: Some kind of Env.t to represent all kinds of current state? *)
+let draw_current_cycle ctx =
+  (* Draw the cursor to indicate the current cycle *)
+  C2d.set_stroke_style ctx (C2d.color (Jstr.of_string "blue"));
+  C2d.stroke
+    ctx
+    (let path = C2d.Path.create () in
+     C2d.Path.move_to path ~x:2.0 ~y:0.0;
+     C2d.Path.line_to path ~x:2.0 ~y:(Float.of_int Constants.canvas_height);
+     path)
+;;
+
 let render_clock ~name =
   render_helper ~name ~f:(fun ctx ->
     let path_builder = Path_builder.create ~x:2.0 ~y:2.0 in
@@ -63,7 +75,8 @@ let render_clock ~name =
       Path_builder.fall path_builder;
       Path_builder.right path_builder
     done;
-    C2d.stroke ctx (Path_builder.path path_builder))
+    C2d.stroke ctx (Path_builder.path path_builder);
+    draw_current_cycle ctx)
 ;;
 
 let render_bit ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
@@ -78,5 +91,6 @@ let render_bit ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
         (Bits.to_bool (Hardcaml_waveterm.Expert.Data.get data i));
       Path_builder.right path_builder
     done;
-    C2d.stroke ctx (Path_builder.path path_builder))
+    C2d.stroke ctx (Path_builder.path path_builder);
+    draw_current_cycle ctx)
 ;;
