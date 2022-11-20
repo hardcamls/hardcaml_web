@@ -183,7 +183,6 @@ module Make (Design : Design.S) = struct
     in
     for i = 0 to num_cycles_to_render - 1 do
       let d = Hardcaml_waveterm.Expert.Data.get data i in
-      Hex_signal_renderer.step renderer d;
       Hex_signal_renderer.step renderer d
     done;
     Hex_signal_renderer.render_last_value renderer;
