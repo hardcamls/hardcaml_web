@@ -1,8 +1,2 @@
-type t
-
-val create : x:float -> y:float -> t
-val rise : t -> unit
-val right : t -> unit
-val fall : t -> unit
-val stroke : Brr_canvas.C2d.t -> t -> unit
-val step : t -> bool -> unit
+val render_clock : name:string -> Brr.El.t
+val render_bit : name:string -> data:Hardcaml_waveterm.Expert.Data.t -> Brr.El.t

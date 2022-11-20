@@ -1,33 +1,82 @@
+open Brr
 open Brr_canvas
+module Bits = Hardcaml.Bits
 
-type t =
-  { path : C2d.Path.t
-  ; mutable x : float
-  ; mutable y : float
-  ; mutable last_value : bool
-  }
+module Path_builder : sig
+  type t
 
-let create ~x ~y =
-  let path = C2d.Path.create () in
-  C2d.Path.move_to path ~x ~y;
-  { path; x; y; last_value = false }
+  val create : x:float -> y:float -> t
+  val rise : t -> unit
+  val right : t -> unit
+  val fall : t -> unit
+  val step : t -> bool -> unit
+  val path : t -> C2d.Path.t
+end = struct
+  type t =
+    { path : C2d.Path.t
+    ; mutable x : float
+    ; mutable y : float
+    ; mutable last_value : bool
+    }
+  [@@deriving fields]
+
+  let create ~x ~y =
+    let path = C2d.Path.create () in
+    C2d.Path.move_to path ~x ~y;
+    { path; x; y; last_value = false }
+  ;;
+
+  let line_to (t : t) ~dx ~dy =
+    let x = t.x +. dx in
+    let y = t.y +. dy in
+    C2d.Path.line_to t.path ~x ~y;
+    t.x <- x;
+    t.y <- y
+  ;;
+
+  let rise t = line_to t ~dx:0.0 ~dy:Constants.signal_height
+  let right t = line_to t ~dx:Constants.half_cycle_width ~dy:0.0
+  let fall t = line_to t ~dx:0.0 ~dy:(Float.neg Constants.signal_height)
+
+  let step (t : t) tf =
+    if tf <> t.last_value then if tf then rise t else fall t;
+    t.last_value <- tf;
+    right t
+  ;;
+end
+
+let render_helper ~name ~f =
+  let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
+  let ctx = C2d.create canvas in
+  C2d.set_font ctx (Jstr.of_string "12px Roboto");
+  f ctx;
+  El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
 ;;
 
-let line_to (t : t) ~dx ~dy =
-  let x = t.x +. dx in
-  let y = t.y +. dy in
-  C2d.Path.line_to t.path ~x ~y;
-  t.x <- x;
-  t.y <- y
+let render_clock ~name =
+  render_helper ~name ~f:(fun ctx ->
+    let path_builder = Path_builder.create ~x:2.0 ~y:2.0 in
+    C2d.set_font ctx (Jstr.of_string "12px Roboto");
+    for _ = 0 to Constants.num_cycles_to_render - 1 do
+      Path_builder.rise path_builder;
+      Path_builder.right path_builder;
+      Path_builder.fall path_builder;
+      Path_builder.right path_builder
+    done;
+    C2d.stroke ctx (Path_builder.path path_builder))
 ;;
 
-let rise t = line_to t ~dx:0.0 ~dy:Constants.signal_height
-let right t = line_to t ~dx:Constants.half_cycle_width ~dy:0.0
-let fall t = line_to t ~dx:0.0 ~dy:(Float.neg Constants.signal_height)
-let stroke ctx t = C2d.stroke ctx t.path
-
-let step (t : t) tf =
-  if tf <> t.last_value then if tf then rise t else fall t;
-  t.last_value <- tf;
-  right t
+let render_bit ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
+  render_helper ~name ~f:(fun ctx ->
+    let path_builder = Path_builder.create ~x:2.0 ~y:2.0 in
+    let num_cycles_to_render =
+      Int.min (Hardcaml_waveterm.Expert.Data.length data) Constants.num_cycles_to_render
+    in
+    for i = 0 to num_cycles_to_render - 1 do
+      Path_builder.step
+        path_builder
+        (Bits.to_bool (Hardcaml_waveterm.Expert.Data.get data i));
+      Path_builder.right path_builder
+    done;
+    C2d.stroke ctx (Path_builder.path path_builder))
 ;;

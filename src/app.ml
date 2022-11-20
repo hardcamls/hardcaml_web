@@ -1,7 +1,6 @@
 open! Base
 open Brr
 open Fut.Syntax
-open Brr_canvas
 module Bits = Hardcaml.Bits
 
 module Make (Design : Design.S) = struct
@@ -200,49 +199,6 @@ module Make (Design : Design.S) = struct
 
   let background colour =
     At.v (Jstr.v "style") (Jstr.v ("background:#" ^ Printf.sprintf "%.6x" colour))
-  ;;
-
-  let create_binary_waves () =
-    let canvas = Canvas.create ~w:1000 ~h:50 [] in
-    let ctx = C2d.create canvas in
-    let renderer = Binary_signal_renderer.create ~x:2.0 ~y:2.0 in
-    C2d.set_font ctx (Jstr.of_string "12px Roboto");
-    for _ = 0 to 80 do
-      Binary_signal_renderer.rise renderer;
-      Binary_signal_renderer.right renderer;
-      Binary_signal_renderer.fall renderer;
-      Binary_signal_renderer.right renderer
-    done;
-    Binary_signal_renderer.stroke ctx renderer;
-    Canvas.to_el canvas
-  ;;
-
-  let create_hex_waves () =
-    let canvas = Canvas.create ~w:1000 ~h:50 [] in
-    let ctx = C2d.create canvas in
-    let renderer =
-      Non_binary_signal_renderer.create
-        ~bits_to_string:Bits_to_string.hex
-        ~x:2.0
-        ~y:2.0
-        ctx
-    in
-    C2d.set_font ctx (Jstr.of_string "12px Roboto");
-    for i = 1 to 10 do
-      for _ = 0 to 5 do
-        Non_binary_signal_renderer.step renderer (Bits.of_int ~width:32 i)
-      done
-    done;
-    Non_binary_signal_renderer.render_last_value renderer;
-    Canvas.to_el canvas
-  ;;
-
-  let _create_example_waves () =
-    let open El in
-    table
-      [ tr [ td [ txt' "clock" ]; td [ create_binary_waves () ] ]
-      ; tr [ td [ txt' "foo" ]; td [ create_hex_waves () ] ]
-      ]
   ;;
 
   let run_app div_app =

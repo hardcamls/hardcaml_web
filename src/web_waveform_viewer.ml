@@ -3,38 +3,8 @@ open Brr
 open Brr_canvas
 module Bits = Hardcaml.Bits
 
-let render_clock ~name =
-  let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
-  let ctx = C2d.create canvas in
-  let renderer = Binary_signal_renderer.create ~x:2.0 ~y:2.0 in
-  C2d.set_font ctx (Jstr.of_string "12px Roboto");
-  for _ = 0 to Constants.num_cycles_to_render - 1 do
-    Binary_signal_renderer.rise renderer;
-    Binary_signal_renderer.right renderer;
-    Binary_signal_renderer.fall renderer;
-    Binary_signal_renderer.right renderer
-  done;
-  Binary_signal_renderer.stroke ctx renderer;
-  El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
-;;
-
-let render_bit ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
-  let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
-  let ctx = C2d.create canvas in
-  let renderer = Binary_signal_renderer.create ~x:2.0 ~y:2.0 in
-  C2d.set_font ctx (Jstr.of_string "12px Roboto");
-  let num_cycles_to_render =
-    Int.min (Hardcaml_waveterm.Expert.Data.length data) Constants.num_cycles_to_render
-  in
-  for i = 0 to num_cycles_to_render - 1 do
-    Binary_signal_renderer.step
-      renderer
-      (Bits.to_bool (Hardcaml_waveterm.Expert.Data.get data i));
-    Binary_signal_renderer.right renderer
-  done;
-  Binary_signal_renderer.stroke ctx renderer;
-  El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
-;;
+let render_clock = Binary_signal_renderer.render_clock
+let render_bit = Binary_signal_renderer.render_bit
 
 let render_non_binary
   ~(name : string)
