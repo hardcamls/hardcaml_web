@@ -261,19 +261,24 @@ module Make (Design : Design.S) = struct
 
   let run div_id =
     (* Wait for document to fully load. *)
-    let* _ = Ev.next Ev.load (Window.as_target G.window) in
-    (* Start running the js code *)
-    let div_app =
-      match Document.find_el_by_id G.document (Jstr.v div_id) with
-      | None -> raise_s [%message "Hardcaml application div was not found"]
-      | Some div_app -> div_app
-    in
-    let worker =
-      try Brr_webworkers.Worker.create (Jstr.v "hardcaml_worker.bc.js") with
-      | _ -> raise_s [%message "Failed to create webworker."]
-    in
-    let* _ = run_app div_app worker in
-    Fut.return ()
+    if Brr_webworkers.Worker.ami ()
+    then
+      let module Worker = Worker.Make (Design) in
+      Worker.run_worker ()
+    else
+      let* _ = Ev.next Ev.load (Window.as_target G.window) in
+      (* Start running the js code *)
+      let div_app =
+        match Document.find_el_by_id G.document (Jstr.v div_id) with
+        | None -> raise_s [%message "Hardcaml application div was not found"]
+        | Some div_app -> div_app
+      in
+      let worker =
+        try Brr_webworkers.Worker.create (Jstr.v "hardcaml_app.bc.js") with
+        | _ -> raise_s [%message "Failed to create webworker."]
+      in
+      let* _ = run_app div_app worker in
+      Fut.return ()
   ;;
 
   let () = ignore (run "hardcaml_app")

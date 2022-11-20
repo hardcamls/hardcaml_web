@@ -70,6 +70,4 @@ module Make (Design : Design.S) = struct
     let* _ = Fut.map recv_from_app e in
     run_worker ()
   ;;
-
-  let () = ignore (run_worker ())
 end
