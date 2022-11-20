@@ -1,7 +1,6 @@
 type t
 
 val create : x:float -> y:float -> t
-val line_to : t -> dx:float -> dy:float -> unit
 
 val rise_and_stroke_right
   :  half_cycle_width:float
