@@ -1,6 +1,41 @@
 open! Base
 open Brr
 open Fut.Syntax
+open Brr_canvas
+
+module Binary_signal_renderer = struct
+  open Brr_canvas
+
+  type t =
+    { path : C2d.Path.t
+    ; mutable x : float
+    ; mutable y : float
+    }
+
+  let create ~x ~y =
+    let path = C2d.Path.create () in
+    C2d.Path.move_to path ~x ~y;
+    { path; x; y }
+  ;;
+
+  let line_to (t : t) ~dx ~dy =
+    let x = t.x +. dx in
+    let y = t.y +. dy in
+    C2d.Path.line_to t.path ~x ~y;
+    t.x <- x;
+    t.y <- y
+  ;;
+
+  let rise_and_stroke_right ~half_cycle_width ~binary_signal_height t =
+    line_to t ~dx:0.0 ~dy:binary_signal_height;
+    line_to t ~dx:half_cycle_width ~dy:0.0
+  ;;
+
+  let fall_and_stroke_right ~half_cycle_width ~binary_signal_height t =
+    line_to t ~dx:0.0 ~dy:(Float.neg binary_signal_height);
+    line_to t ~dx:half_cycle_width ~dy:0.0
+  ;;
+end
 
 module Make (Design : Design.S) = struct
   let printf = Stdio.printf
@@ -199,6 +234,24 @@ module Make (Design : Design.S) = struct
     At.v (Jstr.v "style") (Jstr.v ("background:#" ^ Printf.sprintf "%.6x" colour))
   ;;
 
+  let create_canvas () =
+    let canvas = Canvas.create ~w:1000 ~h:100 [] in
+    let ctx = C2d.create canvas in
+    let renderer = Binary_signal_renderer.create ~x:50.0 ~y:50.0 in
+    for _ = 0 to 80 do
+      Binary_signal_renderer.rise_and_stroke_right
+        ~half_cycle_width:10.0
+        ~binary_signal_height:30.0
+        renderer;
+      Binary_signal_renderer.fall_and_stroke_right
+        ~half_cycle_width:10.0
+        ~binary_signal_height:30.0
+        renderer
+    done;
+    C2d.stroke ctx renderer.path;
+    Canvas.to_el canvas
+  ;;
+
   let run_app div_app =
     let parameters, parameter_table = parameters () in
     let div_parameters = El.div ~at:[ background 0xf8f8f8 ] [ parameter_table ] in
@@ -227,6 +280,7 @@ module Make (Design : Design.S) = struct
     El.set_children
       div_app
       [ El.h1 [ El.txt' Design.title ]
+      ; create_canvas ()
       ; div_parameters
       ; div_control
       ; div_utilization
