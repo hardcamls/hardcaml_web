@@ -155,7 +155,7 @@ module Make (Design : Design.S) = struct
     El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
   ;;
 
-  let render_binary ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
+  let render_bit ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
     let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
     let ctx = C2d.create canvas in
     let renderer = Binary_signal_renderer.create ~x:2.0 ~y:2.0 in
@@ -173,27 +173,52 @@ module Make (Design : Design.S) = struct
     El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
   ;;
 
-  let render_hex ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
+  let render_non_binary
+    ~(name : string)
+    ~(data : Hardcaml_waveterm.Expert.Data.t)
+    ~(wave_format : Hardcaml_waveterm.Wave_format.t)
+    =
     let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
     let ctx = C2d.create canvas in
     C2d.set_font ctx (Jstr.of_string "12px Roboto");
-    let renderer = Hex_signal_renderer.create ~x:1.0 ~y:2.0 ctx in
+    let bits_to_string =
+      match wave_format with
+      | Hex -> Bits_to_string.hex
+      | Unsigned_int -> Bits_to_string.unsigned_int
+      | Int -> Bits_to_string.signed_int
+      | Index l -> fun x -> List.nth_exn l (Bits.to_int x)
+      | Custom f -> f
+      | Binary ->
+        (* XXX fyquah: This should be Bits_to_string.binary I think? *)
+        Bits_to_string.hex
+      | Bit | Bit_or _ -> (* Impossible. *) assert false
+    in
+    let renderer = Non_binary_signal_renderer.create ~bits_to_string ~x:2.0 ~y:2.0 ctx in
     let num_cycles_to_render =
       Int.min (Hardcaml_waveterm.Expert.Data.length data) Constants.num_cycles_to_render
     in
     for i = 0 to num_cycles_to_render - 1 do
       let d = Hardcaml_waveterm.Expert.Data.get data i in
-      Hex_signal_renderer.step renderer d
+      Non_binary_signal_renderer.step renderer d
     done;
-    Hex_signal_renderer.render_last_value renderer;
+    Non_binary_signal_renderer.render_last_value renderer;
     El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
   ;;
 
-  let render_wave (wave : Hardcaml_waveterm.Expert.Wave.t) =
+  let rec render_wave (wave : Hardcaml_waveterm.Expert.Wave.t) =
     match wave with
     | Clock name -> Some (render_clock ~name)
-    | Binary (name, data) -> Some (render_binary ~name ~data)
-    | Data (name, data, _wave_format, _alignment) -> Some (render_hex ~name ~data)
+    | Binary (name, data) -> Some (render_bit ~name ~data)
+    | Data (name, data, wave_format, _alignment) ->
+      (match wave_format with
+       | Bit -> Some (render_bit ~name ~data)
+       | Bit_or wave_format ->
+         if Hardcaml_waveterm.Expert.Data.length data > 0
+            && Bits.width (Hardcaml_waveterm.Expert.Data.get data 0) = 1
+         then Some (render_bit ~name ~data)
+         else render_wave (Data (name, data, wave_format, _alignment))
+       | Binary | Hex | Unsigned_int | Int | Index _ | Custom _ ->
+         Some (render_non_binary ~name ~data ~wave_format))
     | Empty _ -> None
   ;;
 
@@ -282,14 +307,20 @@ module Make (Design : Design.S) = struct
   let create_hex_waves () =
     let canvas = Canvas.create ~w:1000 ~h:50 [] in
     let ctx = C2d.create canvas in
-    let renderer = Hex_signal_renderer.create ~x:2.0 ~y:2.0 ctx in
+    let renderer =
+      Non_binary_signal_renderer.create
+        ~bits_to_string:Bits_to_string.hex
+        ~x:2.0
+        ~y:2.0
+        ctx
+    in
     C2d.set_font ctx (Jstr.of_string "12px Roboto");
     for i = 1 to 10 do
       for _ = 0 to 5 do
-        Hex_signal_renderer.step renderer (Bits.of_int ~width:32 i)
+        Non_binary_signal_renderer.step renderer (Bits.of_int ~width:32 i)
       done
     done;
-    Hex_signal_renderer.render_last_value renderer;
+    Non_binary_signal_renderer.render_last_value renderer;
     Canvas.to_el canvas
   ;;
 

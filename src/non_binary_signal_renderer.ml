@@ -14,25 +14,30 @@ type t =
   ; mutable starting_position : Position.t
   ; mutable current_cycles : int
   ; context : C2d.t
+  ; bits_to_string : Bits.t -> string
   }
 
-let create ~x ~y context =
-  { last_value = None; starting_position = { x; y }; current_cycles = 0; context }
+let create ~x ~y ~bits_to_string context =
+  { last_value = None
+  ; starting_position = { x; y }
+  ; current_cycles = 0
+  ; context
+  ; bits_to_string
+  }
 ;;
 
-let bits_to_hexstring b = Constant.to_hex_string ~signedness:Unsigned (Bits.to_constant b)
 let width_per_half_cycle = Float.to_int Constants.half_cycle_width
 let width_per_cycle = 2 * width_per_half_cycle
 let signal_height = Constants.signal_height
 
-let create_value_to_render ~max_width_allowed ~value ~ctx =
+let create_value_to_render ~max_width_allowed ~value ~ctx ~bits_to_string =
   let can_fit x =
     let text_metric = C2d.measure_text ctx (Jstr.of_string x) in
     let width = C2d.Text_metrics.width text_metric in
     Float.O.(width <= Float.of_int max_width_allowed)
   in
   With_return.with_return (fun { return } ->
-    let value = "0x" ^ bits_to_hexstring value in
+    let value = bits_to_string value in
     (* If the original text as it is works, then return it. *)
     if can_fit value then return (Some value);
     (* Otherwise, keep stripping a character and add some dots at the end until it fits. *)
@@ -57,6 +62,7 @@ let render_last_value t =
         ~max_width_allowed:((t.current_cycles * width_per_cycle) - 3)
         ~value:last_value
         ~ctx:context
+        ~bits_to_string:t.bits_to_string
     in
     (* Draw the rectangle *)
     C2d.stroke_rect
