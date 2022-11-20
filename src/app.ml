@@ -140,6 +140,69 @@ module Make (Design : Design.S) = struct
     El.set_children div [ table_of_utilization utilization ]
   ;;
 
+  let render_clock ~name =
+    let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
+    let ctx = C2d.create canvas in
+    let renderer = Binary_signal_renderer.create ~x:2.0 ~y:2.0 in
+    C2d.set_font ctx (Jstr.of_string "12px Roboto");
+    for _ = 0 to Constants.num_cycles_to_render - 1 do
+      Binary_signal_renderer.rise renderer;
+      Binary_signal_renderer.right renderer;
+      Binary_signal_renderer.fall renderer;
+      Binary_signal_renderer.right renderer
+    done;
+    Binary_signal_renderer.stroke ctx renderer;
+    El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
+  ;;
+
+  let render_binary ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
+    let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
+    let ctx = C2d.create canvas in
+    let renderer = Binary_signal_renderer.create ~x:2.0 ~y:2.0 in
+    C2d.set_font ctx (Jstr.of_string "12px Roboto");
+    let num_cycles_to_render =
+      Int.min (Hardcaml_waveterm.Expert.Data.length data) Constants.num_cycles_to_render
+    in
+    for i = 0 to num_cycles_to_render - 1 do
+      Binary_signal_renderer.step
+        renderer
+        (Bits.to_bool (Hardcaml_waveterm.Expert.Data.get data i));
+      Binary_signal_renderer.right renderer
+    done;
+    Binary_signal_renderer.stroke ctx renderer;
+    El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
+  ;;
+
+  let render_hex ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
+    let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
+    let ctx = C2d.create canvas in
+    C2d.set_font ctx (Jstr.of_string "12px Roboto");
+    let renderer = Hex_signal_renderer.create ~x:1.0 ~y:2.0 ctx in
+    let num_cycles_to_render =
+      Int.min (Hardcaml_waveterm.Expert.Data.length data) Constants.num_cycles_to_render
+    in
+    for i = 0 to num_cycles_to_render - 1 do
+      let d = Hardcaml_waveterm.Expert.Data.get data i in
+      Hex_signal_renderer.step renderer d;
+      Hex_signal_renderer.step renderer d
+    done;
+    Hex_signal_renderer.render_last_value renderer;
+    El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
+  ;;
+
+  let render_wave (wave : Hardcaml_waveterm.Expert.Wave.t) =
+    match wave with
+    | Clock name -> Some (render_clock ~name)
+    | Binary (name, data) -> Some (render_binary ~name ~data)
+    | Data (name, data, _wave_format, _alignment) -> Some (render_hex ~name ~data)
+    | Empty _ -> None
+  ;;
+
+  let render_waves (waveform : Hardcaml_waveterm.Waveform.t) =
+    let waves = Hardcaml_waveterm.Waveform.waves waveform in
+    Array.to_list waves |> List.filter_map ~f:render_wave |> El.table
+  ;;
+
   let simulate_circuit parameters div _ =
     let module D =
       Design.Make (struct
@@ -158,7 +221,8 @@ module Make (Design : Design.S) = struct
           let wave_width = Option.map options ~f:(fun o -> o.wave_width) in
           let display_rules = rules in
           El.div
-            [ El.pre
+            [ render_waves waves
+            ; El.pre
                 [ El.txt'
                     (Hardcaml_waveterm.Waveform.to_buffer
                        ?display_width
@@ -207,14 +271,10 @@ module Make (Design : Design.S) = struct
     let renderer = Binary_signal_renderer.create ~x:2.0 ~y:2.0 in
     C2d.set_font ctx (Jstr.of_string "12px Roboto");
     for _ = 0 to 80 do
-      Binary_signal_renderer.rise_and_stroke_right
-        ~half_cycle_width:10.0
-        ~binary_signal_height:30.0
-        renderer;
-      Binary_signal_renderer.fall_and_stroke_right
-        ~half_cycle_width:10.0
-        ~binary_signal_height:30.0
-        renderer
+      Binary_signal_renderer.rise renderer;
+      Binary_signal_renderer.right renderer;
+      Binary_signal_renderer.fall renderer;
+      Binary_signal_renderer.right renderer
     done;
     Binary_signal_renderer.stroke ctx renderer;
     Canvas.to_el canvas
@@ -227,14 +287,14 @@ module Make (Design : Design.S) = struct
     C2d.set_font ctx (Jstr.of_string "12px Roboto");
     for i = 1 to 10 do
       for _ = 0 to 5 do
-        Hex_signal_renderer.step_with_value renderer (Bits.of_int ~width:32 i)
+        Hex_signal_renderer.step renderer (Bits.of_int ~width:32 i)
       done
     done;
     Hex_signal_renderer.render_last_value renderer;
     Canvas.to_el canvas
   ;;
 
-  let create_waves () =
+  let _create_example_waves () =
     let open El in
     table
       [ tr [ td [ txt' "clock" ]; td [ create_binary_waves () ] ]
@@ -270,7 +330,6 @@ module Make (Design : Design.S) = struct
     El.set_children
       div_app
       [ El.h1 [ El.txt' Design.title ]
-      ; create_waves ()
       ; div_parameters
       ; div_control
       ; div_utilization
