@@ -13,4 +13,5 @@ module Worker_to_app : sig
     | Utilization of Hardcaml.Circuit_utilization.t
     | Rtl of Bytes.t
     | Simulation of Testbench_result.t option
+    | Status of Bytes.t
 end

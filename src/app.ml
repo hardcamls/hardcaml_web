@@ -11,6 +11,7 @@ module Make (Design : Design.S) = struct
     type t =
       { parameters : El.t
       ; control : El.t
+      ; status : El.t
       ; utilization : El.t
       ; ports : El.t
       ; simulation : El.t
@@ -20,15 +21,16 @@ module Make (Design : Design.S) = struct
     let create parameter_table =
       let parameters = El.div ~at:[ background 0xf8f8f8 ] [ parameter_table ] in
       let control = El.div [] in
+      let status = El.div [] in
       let utilization = El.div ~at:[ background 0xf0f0f0 ] [] in
       let ports = El.div ~at:[ background 0xe8e8e8 ] [] in
       let simulation = El.div [] in
       let rtl = El.div ~at:[ background 0xe0e0e0 ] [] in
-      { parameters; control; utilization; ports; simulation; rtl }
+      { parameters; control; status; utilization; ports; simulation; rtl }
     ;;
 
-    let all { parameters; control; utilization; ports; simulation; rtl } =
-      [ parameters; control; utilization; ports; simulation; rtl ]
+    let all { parameters; control; status; utilization; ports; simulation; rtl } =
+      [ parameters; control; status; utilization; ports; simulation; rtl ]
     ;;
   end
 
@@ -52,10 +54,16 @@ module Make (Design : Design.S) = struct
       [ utilization; ports; simulation; rtl ]
     ;;
 
-    let listen_and_post worker button msg =
+    let disable_prop = El.Prop.bool (Jstr.v "disabled")
+    let disable_all t = List.iter (all t) ~f:(fun e -> El.set_prop disable_prop true e)
+    let enable_all t = List.iter (all t) ~f:(fun e -> El.set_prop disable_prop false e)
+
+    let listen_and_post worker t button msg =
       Ev.listen
         Ev.click
-        (fun _ -> Brr_webworkers.Worker.post worker (msg ()))
+        (fun _ ->
+          Brr_webworkers.Worker.post worker (msg ());
+          disable_all t)
         (El.as_target button)
     ;;
   end
@@ -226,36 +234,46 @@ module Make (Design : Design.S) = struct
     El.set_children div (List.filter_opt [ waves; result ])
   ;;
 
-  let rec process_messages_from_worker (divs : App_divs.t) worker =
+  let rec process_messages_from_worker (divs : App_divs.t) buttons worker =
     let recv_from_worker e =
+      let clear () =
+        El.set_children divs.status [];
+        Control_buttons.enable_all buttons
+      in
       let (msg : Messages.Worker_to_app.t) = Brr_io.Message.Ev.data (Ev.as_type e) in
       match msg with
-      | Utilization u -> table_of_utilization divs.utilization u
-      | Rtl rtl -> El.set_children divs.rtl [ El.pre [ El.txt' (Bytes.to_string rtl) ] ]
+      | Utilization u ->
+        table_of_utilization divs.utilization u;
+        clear ()
+      | Rtl rtl ->
+        El.set_children divs.rtl [ El.pre [ El.txt' (Bytes.to_string rtl) ] ];
+        clear ()
       | Simulation result ->
-        Option.iter result ~f:(fun result -> testbench_result divs.simulation result)
+        Option.iter result ~f:(fun result -> testbench_result divs.simulation result);
+        clear ()
+      | Status msg -> El.set_children divs.status [ El.txt' (Bytes.to_string msg) ]
     in
     let msg =
       Ev.next Brr_io.Message.Ev.message (Brr_webworkers.Worker.as_target worker)
     in
     let* _ = Fut.map recv_from_worker msg in
-    process_messages_from_worker divs worker
+    process_messages_from_worker divs buttons worker
   ;;
 
   let run_app div_app worker =
     let parameters, parameter_table = parameters () in
     let divs = App_divs.create parameter_table in
     let buttons = Control_buttons.create () in
-    Control_buttons.listen_and_post worker buttons.utilization (fun () ->
+    Control_buttons.listen_and_post worker buttons buttons.utilization (fun () ->
       Messages.App_to_worker.Utilization (parameters ()));
     Ev.listen Ev.click (generate_ports parameters divs.ports) (El.as_target buttons.ports);
-    Control_buttons.listen_and_post worker buttons.simulation (fun () ->
+    Control_buttons.listen_and_post worker buttons buttons.simulation (fun () ->
       Messages.App_to_worker.Simulation (parameters ()));
-    Control_buttons.listen_and_post worker buttons.rtl (fun () ->
+    Control_buttons.listen_and_post worker buttons buttons.rtl (fun () ->
       Messages.App_to_worker.Rtl (parameters ()));
     El.set_children div_app (El.h1 [ El.txt' Design.title ] :: App_divs.all divs);
     El.set_children divs.control (Control_buttons.all buttons);
-    Fut.map (fun _ -> ()) (process_messages_from_worker divs worker)
+    Fut.map (fun _ -> ()) (process_messages_from_worker divs buttons worker)
   ;;
 
   let run div_id =
