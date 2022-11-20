@@ -10,7 +10,7 @@ end
 
 module Worker_to_app : sig
   type t =
-    | Utilization of Hardcaml.Circuit_utilization.t
+    | Utilization of Utilization.t
     | Rtl of Bytes.t
     | Simulation of Testbench_result.t option
     | Status of Bytes.t

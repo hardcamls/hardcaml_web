@@ -22,7 +22,8 @@ module Make (Design : Design.S) = struct
   let utilization parameters =
     let _, circuit = circuit parameters in
     status "Counting utilization";
-    Hardcaml.Circuit_utilization.create circuit
+    let utilization = Hardcaml.Circuit_utilization.create circuit in
+    Utilization.create utilization
   ;;
 
   let rtl parameters =
