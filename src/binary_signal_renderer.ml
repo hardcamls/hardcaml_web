@@ -83,16 +83,18 @@ let render_clock ~name =
     (* draw_current_cycle ctx *))
 ;;
 
-let render_bit ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
+let render_bit (env : Env.t) ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
   render_helper ~name ~f:(fun ctx ->
     let path_builder = Path_builder.create ~x:2.0 ~y:2.0 in
     let num_cycles_to_render =
-      Int.min (Hardcaml_waveterm.Expert.Data.length data) Constants.num_cycles_to_render
+      Int.min
+        (Hardcaml_waveterm.Expert.Data.length data - env.current_cycle)
+        Constants.num_cycles_to_render
     in
     for i = 0 to num_cycles_to_render - 1 do
       Path_builder.step
         path_builder
-        (Bits.to_bool (Hardcaml_waveterm.Expert.Data.get data i));
+        (Bits.to_bool (Hardcaml_waveterm.Expert.Data.get data (env.current_cycle + i)));
       Path_builder.right path_builder
     done;
     C2d.set_line_width ctx 10.0;
