@@ -4,7 +4,70 @@ open Fut.Syntax
 module Bits = Hardcaml.Bits
 
 module Make (Design : Design.S) = struct
-  let printf = Stdio.printf
+  let background colour =
+    At.v (Jstr.v "style") (Jstr.v ("background:#" ^ Printf.sprintf "%.6x" colour))
+  ;;
+
+  module App_divs = struct
+    type t =
+      { parameters : El.t
+      ; control : El.t
+      ; status : El.t
+      ; utilization : El.t
+      ; ports : El.t
+      ; simulation : El.t
+      ; rtl : El.t
+      }
+
+    let create parameter_table =
+      let parameters = El.div ~at:[ background 0xf8f8f8 ] [ parameter_table ] in
+      let control = El.div [] in
+      let status = El.div [] in
+      let utilization = El.div ~at:[ background 0xf0f0f0 ] [] in
+      let ports = El.div ~at:[ background 0xe8e8e8 ] [] in
+      let simulation = El.div [] in
+      let rtl = El.div ~at:[ background 0xe0e0e0 ] [] in
+      { parameters; control; status; utilization; ports; simulation; rtl }
+    ;;
+
+    let all { parameters; control; status; utilization; ports; simulation; rtl } =
+      [ parameters; control; status; utilization; ports; simulation; rtl ]
+    ;;
+  end
+
+  module Control_buttons = struct
+    type t =
+      { utilization : El.t
+      ; ports : El.t
+      ; simulation : El.t
+      ; rtl : El.t
+      }
+
+    let create () =
+      let utilization = El.button [ El.txt' "Utilization" ] in
+      let ports = El.button [ El.txt' "Ports" ] in
+      let simulation = El.button [ El.txt' "Simulate" ] in
+      let rtl = El.button [ El.txt' "Rtl" ] in
+      { utilization; ports; simulation; rtl }
+    ;;
+
+    let all { utilization; ports; simulation; rtl } =
+      [ utilization; ports; simulation; rtl ]
+    ;;
+
+    let disable_prop = El.Prop.bool (Jstr.v "disabled")
+    let disable_all t = List.iter (all t) ~f:(fun e -> El.set_prop disable_prop true e)
+    let enable_all t = List.iter (all t) ~f:(fun e -> El.set_prop disable_prop false e)
+
+    let listen_and_post worker t button msg =
+      Ev.listen
+        Ev.click
+        (fun _ ->
+          Brr_webworkers.Worker.post worker (msg ());
+          disable_all t)
+        (El.as_target button)
+    ;;
+  end
 
   (* Input element for numbers *)
   let int_input (default : Parameter.t) =
@@ -59,193 +122,165 @@ module Make (Design : Design.S) = struct
         let parameters = parameters ()
       end)
     in
+    let tdc txt =
+      let at = [ At.v (Jstr.v "style") (Jstr.v "text-align:center") ] in
+      let t = El.td ~at [ txt ] in
+      t
+    in
     let port (name, width) =
-      El.tr
-        (List.map [ El.txt' name; El.txt (Jstr.of_int width) ] ~f:(fun d -> El.td [ d ]))
+      El.tr (List.map [ El.txt' name; El.txt (Jstr.of_int width) ] ~f:(fun d -> tdc d))
     in
     let inputs = List.map (D.I.to_list D.I.t) ~f:port in
     let outputs = List.map (D.O.to_list D.O.t) ~f:port in
     let table =
+      let span2 = At.v (Jstr.v "colspan") (Jstr.of_int 2) in
       El.table
-        (List.concat
-           [ [ El.th [ El.txt' "inputs" ] ]
-           ; inputs
-           ; [ El.th [ El.txt' "outputs" ] ]
-           ; outputs
-           ])
+        ([ [ El.tr [ El.th ~at:[ span2 ] [ El.txt' "inputs" ] ] ]
+         ; [ El.tr [ El.th [ El.txt' "name" ]; El.th [ El.txt' "width" ] ] ]
+         ; inputs
+         ; [ El.tr [ El.th ~at:[ span2 ] [ El.txt' "outputs" ] ] ]
+         ; [ El.tr [ El.th [ El.txt' "name" ]; El.th [ El.txt' "width" ] ] ]
+         ; outputs
+         ]
+        |> List.concat)
     in
     El.set_children div [ table ]
   ;;
 
-  let table_of_utilization (u : Hardcaml.Circuit_utilization.t) =
-    let tr f op x = El.tr [ El.td [ El.txt' op ]; El.td [ El.txt' (f x) ] ] in
-    let total_and_max_bits
-      ({ count; total_bits; max_instance_bits } :
-        Hardcaml.Circuit_utilization.Total_and_max_bits.t)
-      =
-      Printf.sprintf
-        "count=%i, total bits=%i, max bits=%i"
-        count
-        total_bits
-        max_instance_bits
+  let table_of_utilization div (u : Utilization.t) =
+    let tdc x =
+      let at = [ At.v (Jstr.v "style") (Jstr.v "text-align:center") ] in
+      let t = El.td ~at [ El.txt (Jstr.of_int x) ] in
+      t
     in
-    let total_bits ({ count; total_bits } : Hardcaml.Circuit_utilization.Total_bits.t) =
-      Printf.sprintf "count=%i, total bits=%i" count total_bits
-    in
-    let muxes
-      ({ count; total_bits; multiplexers = _ } :
-        Hardcaml.Circuit_utilization.Multiplexers.t)
-      =
-      Printf.sprintf "count=%i, total_bits=%i" count total_bits
-    in
-    let mems
-      ({ count; total_bits; memories = _ } : Hardcaml.Circuit_utilization.Memories.t)
-      =
-      Printf.sprintf "count=%i, total_bits=%i" count total_bits
+    let tdn = El.td [] in
+    let tr op { Utilization.count; total; max } =
+      El.tr
+        [ El.th [ El.txt' op ]; tdc count; tdc total; (if max = 0 then tdn else tdc max) ]
     in
     let els =
       List.filter_opt
-        [ Option.map u.adders ~f:(tr total_and_max_bits "(+:)")
-        ; Option.map u.subtractors ~f:(tr total_and_max_bits "(-:)")
-        ; Option.map u.unsigned_multipliers ~f:(tr total_and_max_bits "(*:)")
-        ; Option.map u.signed_multipliers ~f:(tr total_and_max_bits "(*+)")
-        ; Option.map u.and_gates ~f:(tr total_bits "(&:)")
-        ; Option.map u.or_gates ~f:(tr total_bits "(|:)")
-        ; Option.map u.xor_gates ~f:(tr total_bits "(^:)")
-        ; Option.map u.not_gates ~f:(tr total_bits "(~:)")
-        ; Option.map u.equals ~f:(tr total_and_max_bits "(==:)")
-        ; Option.map u.comparators ~f:(tr total_and_max_bits "(<:)")
-        ; Option.map u.multiplexers ~f:(tr muxes "mux")
-        ; Option.map u.registers ~f:(tr total_bits "reg")
-        ; Option.map u.memories ~f:(tr mems "mems")
-        ; Option.map u.constants ~f:(tr total_bits "const")
-        ; Option.map u.wires ~f:(tr total_bits "wire")
-        ; Option.map u.part_selects ~f:(tr total_bits "select")
+        [ Some
+            (El.tr
+               [ El.th [ El.txt' "op" ]
+               ; El.th [ El.txt' "count" ]
+               ; El.th [ El.txt' "total bits" ]
+               ; El.th [ El.txt' "max width/depth" ]
+               ])
+        ; Option.map u.adders ~f:(tr "adders")
+        ; Option.map u.subtractors ~f:(tr "subtractors")
+        ; Option.map u.unsigned_multipliers ~f:(tr "unsigned mult")
+        ; Option.map u.signed_multipliers ~f:(tr "signed mult")
+        ; Option.map u.and_gates ~f:(tr "and gates")
+        ; Option.map u.or_gates ~f:(tr "or gates")
+        ; Option.map u.xor_gates ~f:(tr "xor gates")
+        ; Option.map u.not_gates ~f:(tr "not gates")
+        ; Option.map u.equals ~f:(tr "equality")
+        ; Option.map u.comparators ~f:(tr "comparators")
+        ; Option.map u.multiplexers ~f:(tr "multiplexors")
+        ; Option.map u.registers ~f:(tr "registers")
+        ; Option.map u.memories ~f:(tr "memoriess")
+        ; Option.map u.constants ~f:(tr "constants")
+        ; Option.map u.wires ~f:(tr "wires")
+        ; Option.map u.part_selects ~f:(tr "part selects")
         ]
     in
-    El.table els
+    El.set_children div [ El.table els ]
   ;;
 
-  let generate_circuit_utilization parameters div _ =
-    let module D =
-      Design.Make (struct
-        let parameters = parameters ()
-      end)
+  let testbench_result div (result : Testbench_result.t) =
+    let waves =
+      Option.map result.waves ~f:(fun { waves; options; rules } ->
+        let display_width = Option.map options ~f:(fun o -> o.display_width) in
+        let display_height = Option.map options ~f:(fun o -> o.display_height) in
+        let start_cycle = Option.map options ~f:(fun o -> o.start_cycle) in
+        let wave_width = Option.map options ~f:(fun o -> o.wave_width) in
+        let display_rules = rules in
+        El.div
+          [ Web_waveform_viewer.render waves
+          ; El.pre
+              [ El.txt'
+                  (Hardcaml_waveterm.Waveform.to_buffer
+                     ?display_width
+                     ?display_height
+                     ?wave_width
+                     ?start_cycle
+                     ?display_rules
+                     waves
+                  |> Buffer.contents)
+              ]
+          ])
     in
-    let module Circuit = Hardcaml.Circuit.With_interface (D.I) (D.O) in
-    let scope = Hardcaml.Scope.create ~flatten_design:true () in
-    let circ = Circuit.create_exn ~name:Design.top_level_name (D.create scope) in
-    let utilization = Hardcaml.Circuit_utilization.create circ in
-    El.set_children div [ table_of_utilization utilization ]
+    let result =
+      Option.map result.result ~f:(function
+        | Text t -> El.div [ El.txt' t ]
+        | Brr_el el -> El.div [ el ])
+    in
+    El.set_children div (List.filter_opt [ waves; result ])
   ;;
 
-  let simulate_circuit parameters div _ =
-    let module D =
-      Design.Make (struct
-        let parameters = parameters ()
-      end)
-    in
-    match D.testbench with
-    | None -> ()
-    | Some testbench ->
-      let result = testbench () in
-      let waves =
-        Option.map result.waves ~f:(fun { waves; options; rules } ->
-          let display_width = Option.map options ~f:(fun o -> o.display_width) in
-          let display_height = Option.map options ~f:(fun o -> o.display_height) in
-          let start_cycle = Option.map options ~f:(fun o -> o.start_cycle) in
-          let wave_width = Option.map options ~f:(fun o -> o.wave_width) in
-          let display_rules = rules in
-          El.div
-            [ Web_waveform_viewer.render waves
-            ; El.pre
-                [ El.txt'
-                    (Hardcaml_waveterm.Waveform.to_buffer
-                       ?display_width
-                       ?display_height
-                       ?wave_width
-                       ?start_cycle
-                       ?display_rules
-                       waves
-                    |> Buffer.contents)
-                ]
-            ])
+  let rec process_messages_from_worker (divs : App_divs.t) buttons worker =
+    let recv_from_worker e =
+      let clear () =
+        El.set_children divs.status [];
+        Control_buttons.enable_all buttons
       in
-      let result =
-        Option.map result.result ~f:(function
-          | Text t -> El.div [ El.txt' t ]
-          | Brr_el el -> El.div [ el ])
-      in
-      El.set_children div (List.filter_opt [ waves; result ])
-  ;;
-
-  let generate_rtl parameters div _ =
-    let module D =
-      Design.Make (struct
-        let parameters = parameters ()
-      end)
+      let (msg : Messages.Worker_to_app.t) = Brr_io.Message.Ev.data (Ev.as_type e) in
+      match msg with
+      | Utilization u ->
+        table_of_utilization divs.utilization u;
+        clear ()
+      | Rtl rtl ->
+        El.set_children divs.rtl [ El.pre [ El.txt' (Bytes.to_string rtl) ] ];
+        clear ()
+      | Simulation result ->
+        Option.iter result ~f:(fun result -> testbench_result divs.simulation result);
+        clear ()
+      | Status msg -> El.set_children divs.status [ El.txt' (Bytes.to_string msg) ]
     in
-    let module Circuit = Hardcaml.Circuit.With_interface (D.I) (D.O) in
-    let scope = Hardcaml.Scope.create () in
-    let circ = Circuit.create_exn ~name:Design.top_level_name (D.create scope) in
-    let buffer = Buffer.create 1024 in
-    Hardcaml.Rtl.output
-      ~database:(Hardcaml.Scope.circuit_database scope)
-      ~output_mode:(To_buffer buffer)
-      Verilog
-      circ;
-    El.set_children div [ El.pre [ El.txt' (Buffer.contents buffer) ] ]
+    let msg =
+      Ev.next Brr_io.Message.Ev.message (Brr_webworkers.Worker.as_target worker)
+    in
+    let* _ = Fut.map recv_from_worker msg in
+    process_messages_from_worker divs buttons worker
   ;;
 
-  let background colour =
-    At.v (Jstr.v "style") (Jstr.v ("background:#" ^ Printf.sprintf "%.6x" colour))
-  ;;
-
-  let run_app div_app =
+  let run_app div_app worker =
     let parameters, parameter_table = parameters () in
-    let div_parameters = El.div ~at:[ background 0xf8f8f8 ] [ parameter_table ] in
-    let div_utilization = El.div ~at:[ background 0xf0f0f0 ] [] in
-    let div_ports = El.div ~at:[ background 0xe8e8e8 ] [] in
-    let div_simulate = El.div [] in
-    let div_rtl = El.div ~at:[ background 0xe0e0e0 ] [] in
-    let generate_circuit_utilization_button = El.button [ El.txt' "Utilization" ] in
-    let ports_button = El.button [ El.txt' "Ports" ] in
-    let simulate_button = El.button [ El.txt' "Simulate" ] in
-    let rtl_button = El.button [ El.txt' "Rtl" ] in
-    let div_control =
-      El.div
-        [ generate_circuit_utilization_button; ports_button; simulate_button; rtl_button ]
-    in
-    Ev.listen
-      Ev.click
-      (generate_circuit_utilization parameters div_utilization)
-      (El.as_target generate_circuit_utilization_button);
-    Ev.listen Ev.click (generate_ports parameters div_ports) (El.as_target ports_button);
-    Ev.listen
-      Ev.click
-      (simulate_circuit parameters div_simulate)
-      (El.as_target simulate_button);
-    Ev.listen Ev.click (generate_rtl parameters div_rtl) (El.as_target rtl_button);
-    El.set_children
-      div_app
-      [ El.h1 [ El.txt' Design.title ]
-      ; div_parameters
-      ; div_control
-      ; div_utilization
-      ; div_ports
-      ; div_simulate
-      ; div_rtl
-      ]
+    let divs = App_divs.create parameter_table in
+    let buttons = Control_buttons.create () in
+    Control_buttons.listen_and_post worker buttons buttons.utilization (fun () ->
+      Messages.App_to_worker.Utilization (parameters ()));
+    Ev.listen Ev.click (generate_ports parameters divs.ports) (El.as_target buttons.ports);
+    Control_buttons.listen_and_post worker buttons buttons.simulation (fun () ->
+      Messages.App_to_worker.Simulation (parameters ()));
+    Control_buttons.listen_and_post worker buttons buttons.rtl (fun () ->
+      Messages.App_to_worker.Rtl (parameters ()));
+    El.set_children div_app (El.h1 [ El.txt' Design.title ] :: App_divs.all divs);
+    El.set_children divs.control (Control_buttons.all buttons);
+    Fut.map (fun _ -> ()) (process_messages_from_worker divs buttons worker)
   ;;
 
   let run div_id =
     (* Wait for document to fully load. *)
-    let* _ = Ev.next Ev.load (Window.as_target G.window) in
-    (* Start running the js code *)
-    (match Document.find_el_by_id G.document (Jstr.v div_id) with
-     | None -> printf "Hardcaml application div was not found"
-     | Some div_app -> run_app div_app);
-    Fut.return ()
+    if Brr_webworkers.Worker.ami ()
+    then
+      let module Worker = Worker.Make (Design) in
+      Worker.run_worker ()
+    else
+      let* _ = Ev.next Ev.load (Window.as_target G.window) in
+      (* Start running the js code *)
+      let div_app =
+        match Document.find_el_by_id G.document (Jstr.v div_id) with
+        | None -> raise_s [%message "Hardcaml application div was not found"]
+        | Some div_app -> div_app
+      in
+      let worker =
+        try Brr_webworkers.Worker.create (Jstr.v "hardcaml_app.bc.js") with
+        | _ -> raise_s [%message "Failed to create webworker."]
+      in
+      let* _ = run_app div_app worker in
+      Fut.return ()
   ;;
 
   let () = ignore (run "hardcaml_app")

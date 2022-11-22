@@ -46,7 +46,7 @@ let draw_rect c ~x ~y ~w ~h =
 ;;
 
 let draw cnv =
-  let ctx = C2d.create cnv in
+  let ctx = C2d.get_context cnv in
   let w = float @@ Canvas.w cnv in
   let h = float @@ Canvas.h cnv in
   printf "%f x %f\n" w h;

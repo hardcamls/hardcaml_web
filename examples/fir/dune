@@ -1,5 +1,5 @@
 (executables
- (names hardcaml_app hardcaml_worker)
+ (names hardcaml_app)
  (modes js)
  (promote)
  (libraries hardcaml_web)

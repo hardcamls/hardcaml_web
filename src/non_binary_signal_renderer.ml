@@ -104,7 +104,7 @@ let render
   ~(wave_format : Hardcaml_waveterm.Wave_format.t)
   =
   let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
-  let ctx = C2d.create canvas in
+  let ctx = C2d.get_context canvas in
   C2d.set_line_width ctx 10.0;
   C2d.set_font ctx (Jstr.of_string "120px Roboto");
   let bits_to_string =

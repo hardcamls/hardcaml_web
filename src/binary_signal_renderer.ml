@@ -47,7 +47,7 @@ end
 
 let render_helper ~name ~f =
   let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
-  let ctx = C2d.create canvas in
+  let ctx = C2d.get_context canvas in
   C2d.set_font ctx (Jstr.of_string "120px Roboto");
   f ctx;
   let canvas_el = Canvas.to_el canvas in
