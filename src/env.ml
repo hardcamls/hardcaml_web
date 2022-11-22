@@ -1,1 +1,1 @@
-type t = { current_cycle : int }
+type t = { mutable current_cycle : int }

@@ -24,8 +24,9 @@ let rec render_wave (env : Env.t) (wave : Hardcaml_waveterm.Expert.Wave.t) =
   | Empty _ -> None
 ;;
 
-let render (env : Env.t) (waveform : Hardcaml_waveterm.Waveform.t) =
+let render (waveform : Hardcaml_waveterm.Waveform.t) =
   let open El in
+  let env = { Env.current_cycle = 0 } in
   let waves = Hardcaml_waveterm.Waveform.waves waveform in
   let rows = Array.to_list waves |> List.filter_map ~f:(render_wave env) in
   table

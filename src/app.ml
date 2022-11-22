@@ -197,7 +197,7 @@ module Make (Design : Design.S) = struct
         let wave_width = Option.map options ~f:(fun o -> o.wave_width) in
         let display_rules = rules in
         El.div
-          [ Web_waveform_viewer.render { current_cycle = 0 } waves
+          [ Web_waveform_viewer.render waves
           ; El.pre
               [ El.txt'
                   (Hardcaml_waveterm.Waveform.to_buffer
