@@ -57,7 +57,7 @@ let render_helper ~name ~f =
 ;;
 
 (* XXX fyquah: Some kind of Env.t to represent all kinds of current state? *)
-let draw_current_cycle ctx =
+let _draw_current_cycle ctx =
   (* Draw the cursor to indicate the current cycle *)
   C2d.set_stroke_style ctx (C2d.color (Jstr.of_string "blue"));
   C2d.set_line_width ctx 30.0;
@@ -79,8 +79,8 @@ let render_clock ~name =
       Path_builder.right path_builder
     done;
     C2d.set_line_width ctx 10.0;
-    C2d.stroke ctx (Path_builder.path path_builder);
-    draw_current_cycle ctx)
+    C2d.stroke ctx (Path_builder.path path_builder)
+    (* draw_current_cycle ctx *))
 ;;
 
 let render_bit ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
@@ -96,6 +96,6 @@ let render_bit ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
       Path_builder.right path_builder
     done;
     C2d.set_line_width ctx 10.0;
-    C2d.stroke ctx (Path_builder.path path_builder);
-    draw_current_cycle ctx)
+    C2d.stroke ctx (Path_builder.path path_builder)
+    (* draw_current_cycle ctx *))
 ;;
