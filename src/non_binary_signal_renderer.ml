@@ -1,4 +1,5 @@
 open Core
+open Brr
 open Brr_canvas
 open Hardcaml
 
@@ -76,8 +77,8 @@ let render_last_value t =
       C2d.fill_text
         t.context
         (Jstr.of_string string_to_render)
-        ~x:(t.starting_position.x +. 5.0)
-        ~y:(t.starting_position.y +. 20.0)));
+        ~x:(t.starting_position.x +. 50.0)
+        ~y:(t.starting_position.y +. 200.0)));
   t.starting_position
     <- { x = t.starting_position.x +. Float.of_int (t.current_cycles * width_per_cycle)
        ; y = t.starting_position.y
@@ -95,4 +96,40 @@ let step t current_value =
   if should_render_last_value then render_last_value t else ();
   t.last_value <- Some current_value;
   t.current_cycles <- t.current_cycles + 1
+;;
+
+let render
+  ~(name : string)
+  ~(data : Hardcaml_waveterm.Expert.Data.t)
+  ~(wave_format : Hardcaml_waveterm.Wave_format.t)
+  =
+  let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
+  let ctx = C2d.create canvas in
+  C2d.set_line_width ctx 10.0;
+  C2d.set_font ctx (Jstr.of_string "120px Roboto");
+  let bits_to_string =
+    match wave_format with
+    | Hex -> Bits_to_string.hex
+    | Unsigned_int -> Bits_to_string.unsigned_int
+    | Int -> Bits_to_string.signed_int
+    | Index l -> fun x -> List.nth_exn l (Bits.to_int x)
+    | Custom f -> f
+    | Binary ->
+      (* XXX fyquah: This should be Bits_to_string.binary I think? *)
+      Bits_to_string.hex
+    | Bit | Bit_or _ -> (* Impossible. *) assert false
+  in
+  let renderer = create ~bits_to_string ~x:2.0 ~y:2.0 ctx in
+  let num_cycles_to_render =
+    Int.min (Hardcaml_waveterm.Expert.Data.length data) Constants.num_cycles_to_render
+  in
+  for i = 0 to num_cycles_to_render - 1 do
+    let d = Hardcaml_waveterm.Expert.Data.get data i in
+    step renderer d
+  done;
+  render_last_value renderer;
+  let canvas_el = Canvas.to_el canvas in
+  El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
+  El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
+  El.tr [ El.td [ El.txt' name ]; El.td [ canvas_el ] ]
 ;;

@@ -48,15 +48,19 @@ end
 let render_helper ~name ~f =
   let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
   let ctx = C2d.create canvas in
-  C2d.set_font ctx (Jstr.of_string "12px Roboto");
+  C2d.set_font ctx (Jstr.of_string "120px Roboto");
   f ctx;
-  El.tr [ El.td [ El.txt' name ]; El.td [ Canvas.to_el canvas ] ]
+  let canvas_el = Canvas.to_el canvas in
+  El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
+  El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
+  El.tr [ El.td [ El.txt' name ]; El.td [ canvas_el ] ]
 ;;
 
 (* XXX fyquah: Some kind of Env.t to represent all kinds of current state? *)
 let draw_current_cycle ctx =
   (* Draw the cursor to indicate the current cycle *)
   C2d.set_stroke_style ctx (C2d.color (Jstr.of_string "blue"));
+  C2d.set_line_width ctx 30.0;
   C2d.stroke
     ctx
     (let path = C2d.Path.create () in
@@ -68,13 +72,13 @@ let draw_current_cycle ctx =
 let render_clock ~name =
   render_helper ~name ~f:(fun ctx ->
     let path_builder = Path_builder.create ~x:2.0 ~y:2.0 in
-    C2d.set_font ctx (Jstr.of_string "12px Roboto");
     for _ = 0 to Constants.num_cycles_to_render - 1 do
       Path_builder.rise path_builder;
       Path_builder.right path_builder;
       Path_builder.fall path_builder;
       Path_builder.right path_builder
     done;
+    C2d.set_line_width ctx 10.0;
     C2d.stroke ctx (Path_builder.path path_builder);
     draw_current_cycle ctx)
 ;;
@@ -91,6 +95,7 @@ let render_bit ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
         (Bits.to_bool (Hardcaml_waveterm.Expert.Data.get data i));
       Path_builder.right path_builder
     done;
+    C2d.set_line_width ctx 10.0;
     C2d.stroke ctx (Path_builder.path path_builder);
     draw_current_cycle ctx)
 ;;
