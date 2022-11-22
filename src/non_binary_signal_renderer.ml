@@ -60,7 +60,7 @@ let render_last_value t =
     let context = t.context in
     let string_to_render =
       create_value_to_render
-        ~max_width_allowed:((t.current_cycles * width_per_cycle) - 3)
+        ~max_width_allowed:((t.current_cycles * width_per_cycle) - 50)
         ~value:last_value
         ~ctx:context
         ~bits_to_string:t.bits_to_string

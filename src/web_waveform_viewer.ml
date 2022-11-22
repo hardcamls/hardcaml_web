@@ -5,6 +5,7 @@ module Bits = Hardcaml.Bits
 let render_clock = Binary_signal_renderer.render_clock
 let render_bit = Binary_signal_renderer.render_bit
 let render_non_binary = Non_binary_signal_renderer.render
+let sprintf = Printf.sprintf
 
 let rec render_wave (wave : Hardcaml_waveterm.Expert.Wave.t) =
   match wave with
@@ -27,5 +28,9 @@ let render (waveform : Hardcaml_waveterm.Waveform.t) =
   let open El in
   let waves = Hardcaml_waveterm.Waveform.waves waveform in
   let rows = Array.to_list waves |> List.filter_map ~f:render_wave in
-  table [ thead [ th [ txt' "Signals" ]; th [ txt' "Waves" ] ]; tbody rows ]
+  table
+    [ p [ txt' (sprintf "Current cycle = %d" 0) ]
+    ; thead [ th [ txt' "Signals" ]; th [ txt' "Waves" ] ]
+    ; tbody rows
+    ]
 ;;
