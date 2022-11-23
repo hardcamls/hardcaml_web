@@ -131,5 +131,6 @@ let render
   let canvas_el = Canvas.to_el canvas in
   El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
   El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
-  El.tr [ El.td [ El.txt' name ]; El.td [ canvas_el ] ]
+  El.tr
+    [ El.td [ El.txt' (Bytes.to_string (Bytes.of_string name)) ]; El.td [ canvas_el ] ]
 ;;
