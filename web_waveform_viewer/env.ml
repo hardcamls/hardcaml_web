@@ -1,5 +1,5 @@
 type t =
-  { mutable current_cycle : int
+  { mutable starting_cycle : int
   ; mutable half_cycle_width : int
   ; mutable signal_height : int
   ; mutable canvas_height : int
@@ -8,7 +8,7 @@ type t =
 [@@deriving fields]
 
 let create () =
-  { current_cycle = 0
+  { starting_cycle = 0
   ; half_cycle_width = 300
   ; signal_height = 300
   ; canvas_width = 10000

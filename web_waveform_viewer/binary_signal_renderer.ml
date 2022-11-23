@@ -92,13 +92,13 @@ let render_bit (env : Env.t) ~(name : string) ~(data : Hardcaml_waveterm.Expert.
     in
     let num_cycles_to_render =
       Int.min
-        (Hardcaml_waveterm.Expert.Data.length data - env.current_cycle)
+        (Hardcaml_waveterm.Expert.Data.length data - env.starting_cycle)
         (Env.num_cycles_to_render env)
     in
     for i = 0 to num_cycles_to_render - 1 do
       Path_builder.step
         path_builder
-        (Bits.to_bool (Hardcaml_waveterm.Expert.Data.get data (env.current_cycle + i)));
+        (Bits.to_bool (Hardcaml_waveterm.Expert.Data.get data (env.starting_cycle + i)));
       Path_builder.right path_builder
     done;
     C2d.set_line_width ctx 10.0;

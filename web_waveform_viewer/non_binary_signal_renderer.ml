@@ -123,11 +123,11 @@ let render
   let renderer = create ~bits_to_string ~x:2.0 ~y:2.0 ~env ctx in
   let num_cycles_to_render =
     Int.min
-      (Hardcaml_waveterm.Expert.Data.length data - env.current_cycle)
+      (Hardcaml_waveterm.Expert.Data.length data - env.starting_cycle)
       (Env.num_cycles_to_render env)
   in
   for i = 0 to num_cycles_to_render - 1 do
-    let d = Hardcaml_waveterm.Expert.Data.get data (env.current_cycle + i) in
+    let d = Hardcaml_waveterm.Expert.Data.get data (env.starting_cycle + i) in
     step renderer d
   done;
   render_last_value renderer;

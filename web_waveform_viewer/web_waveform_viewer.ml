@@ -24,7 +24,7 @@ let rec render_wave (env : Env.t) (wave : Hardcaml_waveterm.Expert.Wave.t) =
   | Empty _ -> None
 ;;
 
-let create_update_current_cycle_button ~update_waves (env : Env.t) incr_or_decr =
+let create_update_starting_cycle_button ~update_waves (env : Env.t) incr_or_decr =
   let btn =
     let open El in
     button
@@ -38,8 +38,8 @@ let create_update_current_cycle_button ~update_waves (env : Env.t) incr_or_decr 
     Ev.click
     (fun (_ : Ev.Mouse.t Ev.t) ->
       (match incr_or_decr with
-       | `Incr -> env.current_cycle <- env.current_cycle + 1
-       | `Decr -> env.current_cycle <- Int.max 0 (env.current_cycle - 1));
+       | `Incr -> env.starting_cycle <- env.starting_cycle + 1
+       | `Decr -> env.starting_cycle <- Int.max 0 (env.starting_cycle - 1));
       update_waves ())
     (Ev.target_of_jv (El.to_jv btn));
   btn
@@ -78,15 +78,15 @@ let render (waveform : Hardcaml_waveterm.Waveform.t) =
     let rows = Array.to_list waves |> List.filter_map ~f:(render_wave env) in
     El.set_children
       waves_div
-      [ p [ txt' (sprintf "Current cycle = %d" env.current_cycle) ]
+      [ p [ txt' (sprintf "Current cycle = %d" env.starting_cycle) ]
       ; table [ thead [ th [ txt' "Signals" ]; th [ txt' "Waves" ] ]; tbody rows ]
       ]
   in
   update_waves ();
   div
     [ p
-        [ create_update_current_cycle_button env `Decr ~update_waves
-        ; create_update_current_cycle_button env `Incr ~update_waves
+        [ create_update_starting_cycle_button env `Decr ~update_waves
+        ; create_update_starting_cycle_button env `Incr ~update_waves
         ; create_zoom_button ~update_waves env `In
         ; create_zoom_button ~update_waves env `Out
         ]
