@@ -6,9 +6,7 @@ module Path_builder : sig
   type t
 
   val create : x:float -> y:float -> half_cycle_width:int -> signal_height:int -> t
-  val rise : t -> unit
   val right : t -> unit
-  val fall : t -> unit
   val step : t -> bool -> unit
   val path : t -> C2d.Path.t
 end = struct
@@ -25,7 +23,7 @@ end = struct
   let create ~x ~y ~half_cycle_width ~signal_height =
     let path = C2d.Path.create () in
     C2d.Path.move_to path ~x ~y;
-    { path; x; y; last_value = false; half_cycle_width; signal_height }
+    { path; x; y; last_value = true; half_cycle_width; signal_height }
   ;;
 
   let line_to (t : t) ~dx ~dy =
@@ -36,9 +34,9 @@ end = struct
     t.y <- y
   ;;
 
-  let rise t = line_to t ~dx:0 ~dy:t.signal_height
+  let rise t = line_to t ~dx:0 ~dy:(Int.neg t.signal_height)
   let right t = line_to t ~dx:t.half_cycle_width ~dy:0
-  let fall t = line_to t ~dx:0 ~dy:(Int.neg t.signal_height)
+  let fall t = line_to t ~dx:0 ~dy:t.signal_height
 
   let step (t : t) tf =
     if tf <> t.last_value then if tf then rise t else fall t;
@@ -71,9 +69,9 @@ let render_clock (env : Env.t) ~name =
         ~signal_height:env.signal_height
     in
     for _ = 0 to Env.num_cycles_to_render env - 1 do
-      Path_builder.rise path_builder;
+      Path_builder.step path_builder true;
       Path_builder.right path_builder;
-      Path_builder.fall path_builder;
+      Path_builder.step path_builder false;
       Path_builder.right path_builder
     done;
     C2d.set_line_width ctx 10.0;

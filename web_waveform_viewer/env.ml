@@ -16,7 +16,10 @@ let create () =
   }
 ;;
 
-let num_cycles_to_render (t : t) = t.canvas_width / (t.half_cycle_width * 2)
+let num_cycles_to_render (t : t) =
+  let divisor = t.half_cycle_width * 2 in
+  (t.canvas_width + divisor - 1) / divisor
+;;
 
 let update_half_cycle_width t ~delta =
   t.half_cycle_width <- Int.max 100 (Int.min (t.half_cycle_width + delta) 1000)
