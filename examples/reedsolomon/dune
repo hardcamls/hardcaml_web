@@ -2,6 +2,6 @@
  (names hardcaml_app)
  (modes js)
  (promote)
- (libraries hardcaml_web reedsolomon.hardcaml)
+ (libraries hardcaml_web reedsolomon.hardcaml reedsolomon.test_hardcaml)
  (preprocess (pps ppx_jane ppx_deriving_hardcaml))
 )
