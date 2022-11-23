@@ -14,22 +14,22 @@ type t =
   { mutable last_value : Bits.t option
   ; mutable starting_position : Position.t
   ; mutable current_cycles : int
+  ; env : Env.t
   ; context : C2d.t
   ; bits_to_string : Bits.t -> string
   }
 
-let create ~x ~y ~bits_to_string context =
+let create ~x ~y ~bits_to_string ~env context =
   { last_value = None
   ; starting_position = { x; y }
   ; current_cycles = 0
   ; context
+  ; env
   ; bits_to_string
   }
 ;;
 
-let width_per_half_cycle = Float.to_int Constants.half_cycle_width
-let width_per_cycle = 2 * width_per_half_cycle
-let signal_height = Constants.signal_height
+let width_per_cycle (t : t) = 2 * t.env.half_cycle_width
 
 let create_value_to_render ~max_width_allowed ~value ~ctx ~bits_to_string =
   let can_fit x =
@@ -60,7 +60,7 @@ let render_last_value t =
     let context = t.context in
     let string_to_render =
       create_value_to_render
-        ~max_width_allowed:((t.current_cycles * width_per_cycle) - 50)
+        ~max_width_allowed:((t.current_cycles * width_per_cycle t) - 50)
         ~value:last_value
         ~ctx:context
         ~bits_to_string:t.bits_to_string
@@ -70,8 +70,8 @@ let render_last_value t =
       context
       ~x:t.starting_position.x
       ~y:t.starting_position.y
-      ~w:(Float.of_int (t.current_cycles * width_per_cycle))
-      ~h:signal_height;
+      ~w:(Float.of_int (t.current_cycles * width_per_cycle t))
+      ~h:(Float.of_int t.env.signal_height);
     (* Render the text *)
     Option.iter string_to_render ~f:(fun string_to_render ->
       C2d.fill_text
@@ -80,7 +80,7 @@ let render_last_value t =
         ~x:(t.starting_position.x +. 50.0)
         ~y:(t.starting_position.y +. 200.0)));
   t.starting_position
-    <- { x = t.starting_position.x +. Float.of_int (t.current_cycles * width_per_cycle)
+    <- { x = t.starting_position.x +. Float.of_int (t.current_cycles * width_per_cycle t)
        ; y = t.starting_position.y
        };
   t.current_cycles <- 0;
@@ -102,11 +102,12 @@ let render
   ~(name : string)
   ~(data : Hardcaml_waveterm.Expert.Data.t)
   ~(wave_format : Hardcaml_waveterm.Wave_format.t)
+  (env : Env.t)
   =
-  let canvas = Canvas.create ~w:Constants.canvas_width ~h:Constants.canvas_height [] in
+  let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
   let ctx = C2d.get_context canvas in
   C2d.set_line_width ctx 10.0;
-  C2d.set_font ctx (Jstr.of_string "120px Roboto");
+  C2d.set_font ctx (Jstr.of_string "bold 120px Comic Sans");
   let bits_to_string =
     match wave_format with
     | Hex -> Bits_to_string.hex
@@ -119,12 +120,14 @@ let render
       Bits_to_string.hex
     | Bit | Bit_or _ -> (* Impossible. *) assert false
   in
-  let renderer = create ~bits_to_string ~x:2.0 ~y:2.0 ctx in
+  let renderer = create ~bits_to_string ~x:2.0 ~y:2.0 ~env ctx in
   let num_cycles_to_render =
-    Int.min (Hardcaml_waveterm.Expert.Data.length data) Constants.num_cycles_to_render
+    Int.min
+      (Hardcaml_waveterm.Expert.Data.length data - env.current_cycle)
+      (Env.num_cycles_to_render env)
   in
   for i = 0 to num_cycles_to_render - 1 do
-    let d = Hardcaml_waveterm.Expert.Data.get data i in
+    let d = Hardcaml_waveterm.Expert.Data.get data (env.current_cycle + i) in
     step renderer d
   done;
   render_last_value renderer;
