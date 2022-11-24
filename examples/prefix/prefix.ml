@@ -43,14 +43,25 @@ module Make (P : Parameters.S) = struct
   module Sum = Hardcaml_circuits.Prefix_sum
 
   let create _scope (i : _ I.t) =
-    { O.c =
-        Hardcaml_circuits.Prefix_sum.create
-          (module Signal)
-          ~config:network
-          ~input1:i.a
-          ~input2:i.b
-          ~carry_in:i.c_in
-    }
+    let must_be_power_of_2 =
+      match network with
+      | Serial | Sklansky -> false
+      | Brent_kung | Kogge_stone -> true
+    in
+    let w = Int.ceil_pow2 data_width in
+    let a, b =
+      if must_be_power_of_2 then Signal.uresize i.a w, Signal.uresize i.b w else i.a, i.b
+    in
+    let c =
+      Hardcaml_circuits.Prefix_sum.create
+        (module Signal)
+        ~config:network
+        ~input1:a
+        ~input2:b
+        ~carry_in:i.c_in
+    in
+    let c = Signal.sel_bottom c (data_width + 1) in
+    { O.c }
   ;;
 
   let testbench () =

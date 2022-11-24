@@ -8,6 +8,14 @@
     </head>
     <body>
         <h1>Parallel prefix adder</h1>
+        <p>A parallel prefix adder utilises a parallel prefix network to perform binary addition with different tradeoffs regarding delay, area and fanout.</p>
+        <table>
+        <tr> <th>network</th>     <th>area</th>   <th>delay</th>   <th>fanout</th> </tr>
+        <tr> <td>serial</td>      <td>low</td>    <td>high</td>    <td>low</td> </tr>
+        <tr> <td>sklansky</td>    <td>medium</td> <td>low</td>     <td>high</td> </tr>
+        <tr> <td>brent-kung</td>  <td>low</td>    <td>medium</td>  <td>low</td> </tr>
+        <tr> <td>kogge-stone</td> <td>high</td>   <td>low</td>     <td>low</td> </tr>
+        </table>
         <div id="hardcaml_app"></div>
     </body>
 </html>
