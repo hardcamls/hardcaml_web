@@ -107,7 +107,7 @@ let render
   let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
   let ctx = C2d.get_context canvas in
   C2d.set_line_width ctx 10.0;
-  C2d.set_font ctx (Jstr.of_string "bold 120px Comic Sans");
+  C2d.set_font ctx (Jstr.of_string "120px Courier New");
   let bits_to_string =
     match wave_format with
     | Hex -> Bits_to_string.hex
