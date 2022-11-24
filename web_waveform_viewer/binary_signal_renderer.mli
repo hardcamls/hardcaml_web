@@ -1,8 +1,21 @@
-val render_clock : Env.t -> update_view:(unit -> unit) -> name:string -> Brr.El.t
+module Clock : sig
+  type t
 
-val render_bit
-  :  Env.t
-  -> update_view:(unit -> unit)
-  -> name:string
-  -> data:Hardcaml_waveterm.Expert.Data.t
-  -> Brr.El.t
+  val create : Env.t -> update_view:(unit -> unit) -> name:string -> t
+  val el : t -> Brr.El.t
+  val redraw : t -> unit
+end
+
+module Bit : sig
+  type t
+
+  val create
+    :  Env.t
+    -> update_view:(unit -> unit)
+    -> name:string
+    -> data:Hardcaml_waveterm.Expert.Data.t
+    -> t
+
+  val el : t -> Brr.El.t
+  val redraw : t -> unit
+end

@@ -11,3 +11,4 @@ val update_current_cycle_on_click
   -> unit
 
 val wave_data_get_opt : Hardcaml_waveterm.Expert.Data.t -> int -> Bits.t option
+val clear_canvas : Env.t -> C2d.t -> unit

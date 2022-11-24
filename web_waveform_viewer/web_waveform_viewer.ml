@@ -2,25 +2,52 @@ open! Base
 open Brr
 module Bits = Hardcaml.Bits
 
-let render_clock = Binary_signal_renderer.render_clock
-let render_bit = Binary_signal_renderer.render_bit
-let render_non_binary = Non_binary_signal_renderer.render
 let sprintf = Printf.sprintf
 
-let rec render_wave ~update_view (env : Env.t) (wave : Hardcaml_waveterm.Expert.Wave.t) =
+let rec create_view_for_wave
+  ~update_view
+  (env : Env.t)
+  (wave : Hardcaml_waveterm.Expert.Wave.t)
+  =
+  let create_bit ~name ~data =
+    Some
+      (View_element.T
+         { impl = (module Binary_signal_renderer.Bit)
+         ; handle = Binary_signal_renderer.Bit.create env ~update_view ~name ~data
+         })
+  in
   match wave with
-  | Clock name -> Some (render_clock env ~update_view ~name)
-  | Binary (name, data) -> Some (render_bit env ~update_view ~name ~data)
+  | Clock name ->
+    Some
+      (View_element.T
+         { impl = (module Binary_signal_renderer.Clock)
+         ; handle = Binary_signal_renderer.Clock.create env ~update_view ~name
+         })
+  | Binary (name, data) -> create_bit ~name ~data
   | Data (name, data, wave_format, _alignment) ->
     (match wave_format with
-     | Bit -> Some (render_bit env ~update_view ~name ~data)
+     | Bit -> create_bit ~name ~data
      | Bit_or wave_format ->
        if Hardcaml_waveterm.Expert.Data.length data > 0
           && Bits.width (Hardcaml_waveterm.Expert.Data.get data 0) = 1
-       then Some (render_bit env ~update_view ~name ~data)
-       else render_wave ~update_view env (Data (name, data, wave_format, _alignment))
+       then create_bit ~name ~data
+       else
+         create_view_for_wave
+           ~update_view
+           env
+           (Data (name, data, wave_format, _alignment))
      | Binary | Hex | Unsigned_int | Int | Index _ | Custom _ ->
-       Some (render_non_binary ~update_view ~name ~data ~wave_format env))
+       Some
+         (View_element.T
+            { impl = (module Non_binary_signal_renderer)
+            ; handle =
+                Non_binary_signal_renderer.create
+                  ~update_view
+                  ~name
+                  ~data
+                  ~wave_format
+                  env
+            }))
   | Empty _ -> None
 ;;
 
@@ -73,19 +100,19 @@ let render (waveform : Hardcaml_waveterm.Waveform.t) =
   let open El in
   let env = Env.create () in
   let waves = Hardcaml_waveterm.Waveform.waves waveform in
-  let waves_div = div [] in
+  let counters_div = div [] in
   let rec update_view () =
-    let rows = Array.to_list waves |> List.filter_map ~f:(render_wave ~update_view env) in
     El.set_children
-      waves_div
+      counters_div
       [ p [ txt' (sprintf "Current cycle = %d" env.starting_cycle) ]
       ; p [ txt' (sprintf "Selected cycle = %d" env.selected_cycle) ]
-      ; table
-          [ thead [ th [ txt' "Signals" ]; th [ txt' "Values" ]; th [ txt' "Waves" ] ]
-          ; tbody rows
-          ]
-      ]
+      ];
+    List.iter (Lazy.force views_for_waves) ~f:View_element.redraw
+  and views_for_waves =
+    lazy
+      (Array.to_list waves |> List.filter_map ~f:(create_view_for_wave ~update_view env))
   in
+  let views_for_waves = Lazy.force views_for_waves in
   update_view ();
   div
     [ p
@@ -94,6 +121,12 @@ let render (waveform : Hardcaml_waveterm.Waveform.t) =
         ; create_zoom_button ~update_view env `In
         ; create_zoom_button ~update_view env `Out
         ]
-    ; waves_div
+    ; div
+        [ counters_div
+        ; table
+            [ thead [ th [ txt' "Signals" ]; th [ txt' "Values" ]; th [ txt' "Waves" ] ]
+            ; tbody (List.map ~f:View_element.el views_for_waves)
+            ]
+        ]
     ]
 ;;

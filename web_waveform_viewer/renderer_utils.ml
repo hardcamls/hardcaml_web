@@ -40,3 +40,12 @@ let wave_data_get_opt data i =
   let len = Hardcaml_waveterm.Expert.Data.length data in
   if i < 0 || i >= len then None else Some (Hardcaml_waveterm.Expert.Data.get data i)
 ;;
+
+let clear_canvas (env : Env.t) ctx =
+  C2d.clear_rect
+    ctx
+    ~x:0.0
+    ~y:0.0
+    ~w:(Float.of_int env.canvas_width)
+    ~h:(Float.of_int env.canvas_height)
+;;
