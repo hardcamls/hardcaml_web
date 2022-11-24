@@ -206,6 +206,24 @@ module Make (Design : Design.S) = struct
     El.set_children div (List.filter_opt [ waves; result ])
   ;;
 
+  let download ~filename ~contents =
+    let element = El.a [] in
+    El.set_at
+      (Jstr.v "href")
+      (Some
+         (Jstr.( + )
+            (Jstr.v "data:text/plain;charset=utf-8,")
+            (match Brr.Uri.encode_component (Jstr.of_string contents) with
+             | Ok x -> x
+             | _ -> assert false)))
+      element;
+    El.set_at (Jstr.v "download") (Some (Jstr.v filename)) element;
+    El.set_inline_style (Jstr.v "display") (Jstr.v "none") element;
+    El.append_children (Document.body G.document) [ element ];
+    El.click element;
+    El.remove element
+  ;;
+
   let rec process_messages_from_worker (divs : App_divs.t) buttons worker =
     let recv_from_worker e =
       let clear () =
@@ -218,7 +236,9 @@ module Make (Design : Design.S) = struct
         table_of_utilization divs.utilization u;
         clear ()
       | Rtl rtl ->
-        El.set_children divs.rtl [ El.pre [ El.txt' (Bytes.to_string rtl) ] ];
+        download
+          ~filename:[%string "%{Design.top_level_name}.v"]
+          ~contents:(Bytes.to_string rtl);
         clear ()
       | Simulation result ->
         Option.iter result ~f:(fun result -> testbench_result divs.simulation result);
