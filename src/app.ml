@@ -1,6 +1,7 @@
 open! Base
 open Brr
 open Fut.Syntax
+module Bits = Hardcaml.Bits
 
 module Make (Design : Design.S) = struct
   let background colour =
@@ -196,7 +197,8 @@ module Make (Design : Design.S) = struct
         let wave_width = Option.map options ~f:(fun o -> o.wave_width) in
         let display_rules = rules in
         El.div
-          [ El.pre
+          [ Hardcaml_web_waveform_viewer.render waves
+          ; El.pre
               [ El.txt'
                   (Hardcaml_waveterm.Waveform.to_buffer
                      ?display_width
@@ -275,7 +277,7 @@ module Make (Design : Design.S) = struct
       in
       let worker =
         try Brr_webworkers.Worker.create (Jstr.v "hardcaml_app.bc.js") with
-        | _ -> raise_s [%message "Failed to create webworker."]
+        | exn -> raise_s [%message "Failed to create webworker." (exn : exn)]
       in
       let* _ = run_app div_app worker in
       Fut.return ()
