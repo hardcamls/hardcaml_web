@@ -102,6 +102,7 @@ let render
   ~(name : string)
   ~(data : Hardcaml_waveterm.Expert.Data.t)
   ~(wave_format : Hardcaml_waveterm.Wave_format.t)
+  ~update_view
   (env : Env.t)
   =
   let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
@@ -138,19 +139,9 @@ let render
     step renderer d
   done;
   render_last_value renderer;
+  Renderer_utils.draw_selected_cycle env canvas;
   let canvas_el = Canvas.to_el canvas in
-  Brr.Ev.listen
-    Ev.click
-    (fun (ev : Ev.Mouse.t Ev.t) ->
-      let cycle_offset =
-        let ev = Ev.as_type ev in
-        let mouse_x = Ev.Mouse.offset_x ev in
-        Float.to_int (mouse_x -. Constants.x_offset_to_start_of_signal)
-        * Constants.canvas_scaling_factor
-        / (2 * env.half_cycle_width)
-      in
-      Console.log [ "offset from start = "; cycle_offset ])
-    (Ev.target_of_jv (El.to_jv canvas_el));
+  Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
   El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
   El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
   El.tr

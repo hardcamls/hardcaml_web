@@ -1,5 +1,6 @@
 type t =
   { mutable starting_cycle : int
+  ; mutable selected_cycle : int
   ; mutable half_cycle_width : int
   ; mutable signal_height : int
   ; mutable canvas_height : int
@@ -9,6 +10,7 @@ type t =
 
 let create () =
   { starting_cycle = 0
+  ; selected_cycle = 0
   ; half_cycle_width = 300
   ; signal_height = 300
   ; canvas_width = 10000

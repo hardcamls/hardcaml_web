@@ -45,22 +45,24 @@ end = struct
   ;;
 end
 
-let render_helper (env : Env.t) ~name ~f =
+let render_helper (env : Env.t) ~update_view ~name ~f =
   let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
   let ctx = C2d.get_context canvas in
   C2d.set_font ctx (Jstr.of_string "120px Roboto");
   f ctx;
+  Renderer_utils.draw_selected_cycle env canvas;
   let canvas_el = Canvas.to_el canvas in
   El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
   El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
+  Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
   El.tr
     [ El.td [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
     ; El.td [ canvas_el ]
     ]
 ;;
 
-let render_clock (env : Env.t) ~name =
-  render_helper env ~name ~f:(fun ctx ->
+let render_clock (env : Env.t) ~update_view ~name =
+  render_helper env ~update_view ~name ~f:(fun ctx ->
     let path_builder =
       Path_builder.create
         ~x:2.0
@@ -75,12 +77,16 @@ let render_clock (env : Env.t) ~name =
       Path_builder.right path_builder
     done;
     C2d.set_line_width ctx 10.0;
-    C2d.stroke ctx (Path_builder.path path_builder)
-    (* draw_current_cycle ctx *))
+    C2d.stroke ctx (Path_builder.path path_builder))
 ;;
 
-let render_bit (env : Env.t) ~(name : string) ~(data : Hardcaml_waveterm.Expert.Data.t) =
-  render_helper env ~name ~f:(fun ctx ->
+let render_bit
+  (env : Env.t)
+  ~update_view
+  ~(name : string)
+  ~(data : Hardcaml_waveterm.Expert.Data.t)
+  =
+  render_helper env ~update_view ~name ~f:(fun ctx ->
     let path_builder =
       Path_builder.create
         ~x:2.0
@@ -100,6 +106,5 @@ let render_bit (env : Env.t) ~(name : string) ~(data : Hardcaml_waveterm.Expert.
       Path_builder.right path_builder
     done;
     C2d.set_line_width ctx 10.0;
-    C2d.stroke ctx (Path_builder.path path_builder)
-    (* draw_current_cycle ctx *))
+    C2d.stroke ctx (Path_builder.path path_builder))
 ;;

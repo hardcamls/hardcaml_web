@@ -1,5 +1,6 @@
 type t =
   { mutable starting_cycle : int
+  ; mutable selected_cycle : int
   ; mutable half_cycle_width : int
   ; mutable signal_height : int
   ; mutable canvas_height : int
