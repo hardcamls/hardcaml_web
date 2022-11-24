@@ -45,7 +45,7 @@ end = struct
   ;;
 end
 
-let render_helper (env : Env.t) ~update_view ~name ~f =
+let render_helper (env : Env.t) ~update_view ~name ~value_at_selected_cycle ~f =
   let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
   let ctx = C2d.get_context canvas in
   C2d.set_font ctx (Jstr.of_string "120px Roboto");
@@ -55,14 +55,24 @@ let render_helper (env : Env.t) ~update_view ~name ~f =
   El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
   El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
   Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
-  El.tr
-    [ El.td [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
-    ; El.td [ canvas_el ]
-    ]
+  let signal_column =
+    El.td [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
+  in
+  let value_column =
+    El.td
+      [ El.txt'
+          (match value_at_selected_cycle with
+           | None -> ""
+           | Some b -> if Bits.to_bool b then "1" else "0")
+      ]
+  in
+  El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
+  El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") value_column;
+  El.tr [ signal_column; value_column; El.td [ canvas_el ] ]
 ;;
 
 let render_clock (env : Env.t) ~update_view ~name =
-  render_helper env ~update_view ~name ~f:(fun ctx ->
+  render_helper env ~update_view ~name ~value_at_selected_cycle:None ~f:(fun ctx ->
     let path_builder =
       Path_builder.create
         ~x:2.0
@@ -72,9 +82,7 @@ let render_clock (env : Env.t) ~update_view ~name =
     in
     for _ = 0 to Env.num_cycles_to_render env - 1 do
       Path_builder.step path_builder true;
-      Path_builder.right path_builder;
-      Path_builder.step path_builder false;
-      Path_builder.right path_builder
+      Path_builder.step path_builder false
     done;
     C2d.set_line_width ctx 10.0;
     C2d.stroke ctx (Path_builder.path path_builder))
@@ -86,7 +94,10 @@ let render_bit
   ~(name : string)
   ~(data : Hardcaml_waveterm.Expert.Data.t)
   =
-  render_helper env ~update_view ~name ~f:(fun ctx ->
+  let value_at_selected_cycle =
+    Renderer_utils.wave_data_get_opt data env.selected_cycle
+  in
+  render_helper env ~update_view ~name ~value_at_selected_cycle ~f:(fun ctx ->
     let path_builder =
       Path_builder.create
         ~x:2.0

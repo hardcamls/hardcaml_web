@@ -80,7 +80,10 @@ let render (waveform : Hardcaml_waveterm.Waveform.t) =
       waves_div
       [ p [ txt' (sprintf "Current cycle = %d" env.starting_cycle) ]
       ; p [ txt' (sprintf "Selected cycle = %d" env.selected_cycle) ]
-      ; table [ thead [ th [ txt' "Signals" ]; th [ txt' "Waves" ] ]; tbody rows ]
+      ; table
+          [ thead [ th [ txt' "Signals" ]; th [ txt' "Values" ]; th [ txt' "Waves" ] ]
+          ; tbody rows
+          ]
       ]
   in
   update_view ();

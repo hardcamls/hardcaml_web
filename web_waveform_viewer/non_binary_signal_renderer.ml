@@ -144,6 +144,16 @@ let render
   Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
   El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
   El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
-  El.tr
-    [ El.td [ El.txt' (Bytes.to_string (Bytes.of_string name)) ]; El.td [ canvas_el ] ]
+  let values_column =
+    El.td
+      [ El.txt'
+          (match Renderer_utils.wave_data_get_opt data env.selected_cycle with
+           | None -> ""
+           | Some bits -> bits_to_string bits)
+      ]
+  in
+  let signal_column = El.td [ El.txt' (Bytes.to_string (Bytes.of_string name)) ] in
+  El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
+  El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") values_column;
+  El.tr [ signal_column; values_column; El.td [ canvas_el ] ]
 ;;
