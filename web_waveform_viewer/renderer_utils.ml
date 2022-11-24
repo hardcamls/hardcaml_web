@@ -7,7 +7,8 @@ let draw_selected_cycle (env : Env.t) (canvas : Canvas.t) =
     let path = C2d.Path.create () in
     let x =
       Constants.x_offset_to_start_of_signal
-      +. Float.of_int (env.selected_cycle * 2 * env.half_cycle_width)
+      +. Float.of_int
+           ((env.selected_cycle - env.starting_cycle) * 2 * env.half_cycle_width)
     in
     C2d.Path.move_to path ~x ~y:0.0;
     C2d.Path.line_to path ~x ~y:(Float.of_int env.canvas_height);
