@@ -1,14 +1,17 @@
 open Base
 
 module Typ = struct
+  type symbol =
+    { options : string list
+    ; value : int
+    }
+  [@@deriving sexp_of]
+
   type t =
     | Flag of bool
     | Int of int
     | String of string
-    | Symbol of
-        { options : string array
-        ; value : int
-        }
+    | Symbol of symbol
   [@@deriving sexp_of]
 end
 
@@ -44,7 +47,7 @@ let flag_exn t = flag t |> Option.value_exn
 
 let symbol { typ; description = _ } =
   match typ with
-  | Typ.Symbol { value; _ } -> Some value
+  | Typ.Symbol value -> Some value
   | _ -> None
 ;;
 

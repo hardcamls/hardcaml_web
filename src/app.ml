@@ -97,6 +97,28 @@ module Make (Design : Design.S) = struct
     e, fun () -> { default with typ = Flag (El.prop El.Prop.checked e) }
   ;;
 
+  let symbol_input (default : Parameter.t) =
+    let p = Parameter.symbol_exn default in
+    let options =
+      List.mapi p.options ~f:(fun idx o ->
+        let value = At.value (Jstr.of_int idx) in
+        let at = if idx = p.value then [ At.selected; value ] else [ value ] in
+        El.option ~at [ El.txt' o ])
+    in
+    let e = El.select options in
+    ( e
+    , fun () ->
+        let value =
+          match
+            List.findi options ~f:(fun _ o ->
+              El.prop (El.Prop.bool (Jstr.v "selected")) o)
+          with
+          | Some (idx, _) -> idx
+          | None -> 0 (* really, this is not possible, but lets not raise *)
+        in
+        { default with typ = Symbol { options = p.options; value } } )
+  ;;
+
   (* Create a table for the parameter, and return and accessor function. *)
   let parameters () =
     let parameters =
@@ -106,7 +128,7 @@ module Make (Design : Design.S) = struct
           | String _ -> string_input p
           | Int _ -> int_input p
           | Flag _ -> flag_input p
-          | Symbol _ -> El.txt' "TODO symbol", fun () -> p
+          | Symbol _ -> symbol_input p
         in
         let row = List.map [ El.txt' description; value_ ] ~f:(fun e -> El.td [ e ]) in
         name, El.tr row, get)
@@ -223,6 +245,13 @@ module Make (Design : Design.S) = struct
       | Simulation result ->
         Option.iter result ~f:(fun result -> testbench_result divs.simulation result);
         clear ()
+      | Error (msg, parameters) ->
+        El.set_children
+          divs.status
+          [ El.txt' (Bytes.to_string msg)
+          ; El.txt' (Sexp.to_string_hum (Parameters.sexp_of_t parameters))
+          ];
+        Control_buttons.enable_all buttons
       | Status msg -> El.set_children divs.status [ El.txt' (Bytes.to_string msg) ]
     in
     let msg =
@@ -243,7 +272,7 @@ module Make (Design : Design.S) = struct
       Messages.App_to_worker.Simulation (parameters ()));
     Control_buttons.listen_and_post worker buttons buttons.rtl (fun () ->
       Messages.App_to_worker.Rtl (parameters ()));
-    El.set_children div_app (El.h1 [ El.txt' Design.title ] :: App_divs.all divs);
+    El.set_children div_app (App_divs.all divs);
     El.set_children divs.control (Control_buttons.all buttons);
     Fut.map (fun _ -> ()) (process_messages_from_worker divs buttons worker)
   ;;

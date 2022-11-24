@@ -6,6 +6,10 @@ module Make (Design : Design.S) = struct
   let post m = Brr_webworkers.Worker.G.post m
   let status s = post (Messages.Worker_to_app.Status (Bytes.of_string s))
 
+  let error s parameters =
+    post (Messages.Worker_to_app.Error (Bytes.of_string s, parameters))
+  ;;
+
   let circuit parameters =
     status "Instantiating design";
     let module D =
@@ -52,17 +56,33 @@ module Make (Design : Design.S) = struct
       Some result
   ;;
 
+  (* Make the API's safe-ish by catching all exceptions and reporting them.*)
+
+  let utilization parameters =
+    match utilization parameters with
+    | utilization -> post (Messages.Worker_to_app.Utilization utilization)
+    | exception e -> error (Exn.to_string e) parameters
+  ;;
+
+  let rtl parameters =
+    match rtl parameters with
+    | rtl -> post (Messages.Worker_to_app.Rtl rtl)
+    | exception e -> error (Exn.to_string e) parameters
+  ;;
+
+  let simulation parameters =
+    match simulation parameters with
+    | simulation -> post (Messages.Worker_to_app.Simulation simulation)
+    | exception e -> error (Exn.to_string e) parameters
+  ;;
+
   let rec run_worker () =
     let recv_from_app e =
       let msg : Messages.App_to_worker.t = Brr_io.Message.Ev.data (Ev.as_type e) in
       match msg with
-      | Utilization parameters ->
-        (* XXX Apparently, not all fields in a utilization.t can be cloned?
-           Either Map.t or recursive types? *)
-        post (Messages.Worker_to_app.Utilization (utilization parameters))
-      | Rtl parameters -> post (Messages.Worker_to_app.Rtl (rtl parameters))
-      | Simulation parameters ->
-        post (Messages.Worker_to_app.Simulation (simulation parameters))
+      | Utilization parameters -> utilization parameters
+      | Rtl parameters -> rtl parameters
+      | Simulation parameters -> simulation parameters
     in
     if not (Brr_webworkers.Worker.ami ())
     then raise_s [%message "This should be run as a worker!"];

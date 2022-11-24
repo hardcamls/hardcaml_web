@@ -3,7 +3,6 @@ open Hardcaml
 open Hardcaml_waveterm
 open Hardcaml_web
 
-let title = "Hardcaml Finite Impulse Response (FIR) Filter"
 let top_level_name = "fir_filter"
 
 let default_parameters =

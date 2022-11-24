@@ -14,4 +14,5 @@ module Worker_to_app = struct
     | Rtl of Bytes.t (* XXX a string led to a unicode error of some sort. *)
     | Simulation of Testbench_result.t option
     | Status of Bytes.t (* XXX neither string nor Jstr seemed to work. *)
+    | Error of Bytes.t * Parameters.t
 end
