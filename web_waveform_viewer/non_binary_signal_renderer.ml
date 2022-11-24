@@ -158,7 +158,7 @@ let create
   ~update_view
   (env : Env.t)
   =
-  let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
+  let canvas = Renderer_utils.create_wave_canvas env in
   let bits_to_string =
     match wave_format with
     | Hex -> Bits_to_string.hex
@@ -171,8 +171,10 @@ let create
       Bits_to_string.hex
     | Bit | Bit_or _ -> (* Impossible. *) assert false
   in
-  let values_column = El.td [] in
-  let signal_column = El.td [ El.txt' (Bytes.to_string (Bytes.of_string name)) ] in
+  let values_column = Renderer_utils.td [] in
+  let signal_column =
+    Renderer_utils.td [ El.txt' (Bytes.to_string (Bytes.of_string name)) ]
+  in
   El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
   El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") values_column;
   let canvas_el = Canvas.to_el canvas in
@@ -188,7 +190,7 @@ let create
   let t =
     { canvas
     ; values_column
-    ; el = El.tr [ signal_column; values_column; El.td [ canvas_el ] ]
+    ; el = El.tr [ signal_column; values_column; Renderer_utils.td [ canvas_el ] ]
     ; env
     ; bits_to_string
     ; data

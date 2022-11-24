@@ -41,6 +41,16 @@ let wave_data_get_opt data i =
   if i < 0 || i >= len then None else Some (Hardcaml_waveterm.Expert.Data.get data i)
 ;;
 
+let create_wave_canvas (env : Env.t) =
+  let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
+  let canvas_el = Canvas.to_el canvas in
+  (* For whatever reason, "block" gets rid of the spacing below the canvas in
+     the td.
+  *)
+  El.set_inline_style (Jstr.v "display") (Jstr.v "block") canvas_el;
+  canvas
+;;
+
 let clear_canvas (env : Env.t) ctx =
   C2d.clear_rect
     ctx
@@ -48,4 +58,14 @@ let clear_canvas (env : Env.t) ctx =
     ~y:0.0
     ~w:(Float.of_int env.canvas_width)
     ~h:(Float.of_int env.canvas_height)
+;;
+
+let td xs =
+  (* XXX fyquah: We should really be using CSS for this. *)
+  let e = El.td xs in
+  El.set_inline_style (Jstr.v "padding-top") (Jstr.v "0px") e;
+  El.set_inline_style (Jstr.v "padding-bottom") (Jstr.v "0px") e;
+  El.set_inline_style (Jstr.v "padding-left") (Jstr.v "10px") e;
+  El.set_inline_style (Jstr.v "padding-right") (Jstr.v "10px") e;
+  e
 ;;

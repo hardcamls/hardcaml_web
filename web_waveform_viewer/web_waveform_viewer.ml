@@ -114,6 +114,15 @@ let render (waveform : Hardcaml_waveterm.Waveform.t) =
   in
   let views_for_waves = Lazy.force views_for_waves in
   update_view ();
+  let waves_table =
+    table
+      [ thead [ th [ txt' "Signals" ]; th [ txt' "Values" ]; th [ txt' "Waves" ] ]
+      ; tbody (List.map ~f:View_element.el views_for_waves)
+      ]
+  in
+  El.set_at (Jstr.v "cellspacing") (Some (Jstr.v "0")) waves_table;
+  El.set_inline_style (Jstr.v "border-collapse") (Jstr.v "collapse") waves_table;
+  El.set_inline_style (Jstr.v "border-spacing") (Jstr.v "0") waves_table;
   div
     [ p
         [ create_update_starting_cycle_button env `Decr ~update_view
@@ -121,12 +130,6 @@ let render (waveform : Hardcaml_waveterm.Waveform.t) =
         ; create_zoom_button ~update_view env `In
         ; create_zoom_button ~update_view env `Out
         ]
-    ; div
-        [ counters_div
-        ; table
-            [ thead [ th [ txt' "Signals" ]; th [ txt' "Values" ]; th [ txt' "Waves" ] ]
-            ; tbody (List.map ~f:View_element.el views_for_waves)
-            ]
-        ]
+    ; div [ counters_div; waves_table ]
     ]
 ;;
