@@ -14,4 +14,5 @@ module Worker_to_app : sig
     | Rtl of Bytes.t
     | Simulation of Testbench_result.t option
     | Status of Bytes.t
+    | Error of Bytes.t * Parameters.t
 end

@@ -13,5 +13,5 @@ val as_string : t -> string -> string option
 val as_string_exn : t -> string -> string
 val as_flag : t -> string -> bool option
 val as_flag_exn : t -> string -> bool
-val as_symbol : t -> string -> int option
-val as_symbol_exn : t -> string -> int
+val as_symbol : t -> string -> Parameter.Typ.symbol option
+val as_symbol_exn : t -> string -> Parameter.Typ.symbol
