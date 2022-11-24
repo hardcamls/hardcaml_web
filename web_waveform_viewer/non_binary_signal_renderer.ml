@@ -98,6 +98,9 @@ let step t current_value =
   t.current_cycles <- t.current_cycles + 1
 ;;
 
+let x_offset_to_wave = 2.0
+let y_offset_to_wave = 2.0
+
 let render
   ~(name : string)
   ~(data : Hardcaml_waveterm.Expert.Data.t)
@@ -120,7 +123,9 @@ let render
       Bits_to_string.hex
     | Bit | Bit_or _ -> (* Impossible. *) assert false
   in
-  let renderer = create ~bits_to_string ~x:2.0 ~y:2.0 ~env ctx in
+  let renderer =
+    create ~bits_to_string ~x:x_offset_to_wave ~y:y_offset_to_wave ~env ctx
+  in
   let num_cycles_to_render =
     Int.min
       (Hardcaml_waveterm.Expert.Data.length data - env.starting_cycle)
@@ -132,6 +137,16 @@ let render
   done;
   render_last_value renderer;
   let canvas_el = Canvas.to_el canvas in
+  Brr.Ev.listen
+    Ev.click
+    (fun (ev : Ev.Mouse.t Ev.t) ->
+      let cycle_offset =
+        let ev = Ev.as_type ev in
+        let mouse_x = Ev.Mouse.offset_x ev in
+        Float.to_int (mouse_x -. x_offset_to_wave) * 10 / (2 * env.half_cycle_width)
+      in
+      Console.log [ "offset from start = "; cycle_offset ])
+    (Ev.target_of_jv (El.to_jv canvas_el));
   El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
   El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
   El.tr
