@@ -1,3 +1,4 @@
+open Core
 open Brr
 open Brr_canvas
 module Bits = Hardcaml.Bits
@@ -39,7 +40,7 @@ end = struct
   let fall t = line_to t ~dx:0 ~dy:t.signal_height
 
   let step (t : t) tf =
-    if tf <> t.last_value then if tf then rise t else fall t;
+    if not (Bool.equal tf t.last_value) then if tf then rise t else fall t;
     t.last_value <- tf;
     right t
   ;;
@@ -90,7 +91,7 @@ module Bit = struct
            | None -> ""
            | Some b -> if Bits.to_bool b then "1" else "0")
       ];
-    C2d.set_line_width ctx 10.0;
+    C2d.set_line_width ctx Constants.signal_line_width;
     C2d.stroke ctx (Path_builder.path path_builder);
     Renderer_utils.draw_selected_cycle env canvas
   ;;
@@ -98,8 +99,14 @@ module Bit = struct
   let create (env : Env.t) ~update_view ~name ~data =
     let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
     let canvas_el = Canvas.to_el canvas in
-    El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
-    El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
+    El.set_inline_style
+      (Jstr.of_string "height")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels env)))
+      canvas_el;
+    El.set_inline_style
+      (Jstr.of_string "width")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
+      canvas_el;
     let signal_column =
       El.td [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
     in
@@ -146,7 +153,7 @@ module Clock = struct
       Path_builder.step path_builder false
     done;
     C2d.set_stroke_style ctx (C2d.color (Jstr.v "black"));
-    C2d.set_line_width ctx 10.0;
+    C2d.set_line_width ctx Constants.signal_line_width;
     C2d.stroke ctx (Path_builder.path path_builder);
     Renderer_utils.draw_selected_cycle env canvas
   ;;
@@ -154,8 +161,14 @@ module Clock = struct
   let create (env : Env.t) ~update_view ~name =
     let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
     let canvas_el = Canvas.to_el canvas in
-    El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
-    El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
+    El.set_inline_style
+      (Jstr.of_string "height")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels env)))
+      canvas_el;
+    El.set_inline_style
+      (Jstr.of_string "width")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
+      canvas_el;
     let signal_column =
       El.td [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
     in

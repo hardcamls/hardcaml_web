@@ -61,8 +61,11 @@ module Renderer = struct
     Option.iter t.last_value ~f:(fun last_value ->
       let context = t.context in
       let string_to_render =
+        let max_width_allowed =
+          (t.current_cycles * width_per_cycle t) - (5 * Constants.canvas_scaling_factor)
+        in
         create_value_to_render
-          ~max_width_allowed:((t.current_cycles * width_per_cycle t) - 50)
+          ~max_width_allowed
           ~value:last_value
           ~ctx:context
           ~bits_to_string:t.bits_to_string
@@ -79,8 +82,8 @@ module Renderer = struct
         C2d.fill_text
           t.context
           (Jstr.of_string string_to_render)
-          ~x:(t.starting_position.x +. 50.0)
-          ~y:(t.starting_position.y +. 200.0)));
+          ~x:(t.starting_position.x +. Float.of_int (5 * Constants.canvas_scaling_factor))
+          ~y:(t.starting_position.y +. Float.of_int (20 * Constants.canvas_scaling_factor))));
     t.starting_position
       <- { x = t.starting_position.x +. Float.of_int (t.current_cycles * width_per_cycle t)
          ; y = t.starting_position.y
@@ -115,9 +118,11 @@ let el t = t.el
 let redraw (t : t) =
   Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
   let ctx = C2d.get_context t.canvas in
-  C2d.set_line_width ctx 10.0;
+  C2d.set_line_width ctx Constants.signal_line_width;
   C2d.set_stroke_style ctx (C2d.color (Jstr.v "black"));
-  C2d.set_font ctx (Jstr.of_string "120px Courier New");
+  C2d.set_font
+    ctx
+    (Jstr.of_string (sprintf "%dpx Courier New" Constants.font_size_in_pixels));
   let num_cycles_to_render =
     Int.min
       (Hardcaml_waveterm.Expert.Data.length t.data - t.env.starting_cycle)
@@ -171,8 +176,14 @@ let create
   El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
   El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") values_column;
   let canvas_el = Canvas.to_el canvas in
-  El.set_inline_style (Jstr.of_string "height") (Jstr.of_string "50px") canvas_el;
-  El.set_inline_style (Jstr.of_string "width") (Jstr.of_string "1000px") canvas_el;
+  El.set_inline_style
+    (Jstr.of_string "height")
+    (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels env)))
+    canvas_el;
+  El.set_inline_style
+    (Jstr.of_string "width")
+    (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
+    canvas_el;
   Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
   let t =
     { canvas
