@@ -283,7 +283,7 @@ module Make (Design : Design.S) = struct
       Messages.App_to_worker.Simulation (parameters ()));
     Control_buttons.listen_and_post worker buttons buttons.rtl (fun () ->
       Messages.App_to_worker.Rtl (parameters ()));
-    El.set_children div_app (El.h1 [ El.txt' Design.title ] :: App_divs.all divs);
+    El.set_children div_app (App_divs.all divs);
     El.set_children divs.control (Control_buttons.all buttons);
     Fut.map (fun _ -> ()) (process_messages_from_worker divs buttons worker)
   ;;

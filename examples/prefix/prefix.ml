@@ -3,7 +3,6 @@ open Hardcaml
 open! Hardcaml_waveterm
 open Hardcaml_web
 
-let title = "no title yet"
 let top_level_name = "prefix_adder"
 
 let default_parameters =
