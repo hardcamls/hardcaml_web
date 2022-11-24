@@ -97,7 +97,7 @@ module Bit = struct
   ;;
 
   let create (env : Env.t) ~update_view ~name ~data =
-    let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
+    let canvas = Renderer_utils.create_wave_canvas env in
     let canvas_el = Canvas.to_el canvas in
     El.set_inline_style
       (Jstr.of_string "height")
@@ -108,16 +108,17 @@ module Bit = struct
       (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
       canvas_el;
     let signal_column =
-      El.td [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
+      Renderer_utils.td
+        [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
     in
-    let value_column = El.td [] in
+    let value_column = Renderer_utils.td [] in
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") value_column;
     Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
     let t =
       { canvas
       ; env
-      ; el = El.tr [ signal_column; value_column; El.td [ canvas_el ] ]
+      ; el = El.tr [ signal_column; value_column; Renderer_utils.td [ canvas_el ] ]
       ; value_column
       ; data
       }
@@ -159,7 +160,7 @@ module Clock = struct
   ;;
 
   let create (env : Env.t) ~update_view ~name =
-    let canvas = Canvas.create ~w:env.canvas_width ~h:env.canvas_height [] in
+    let canvas = Renderer_utils.create_wave_canvas env in
     let canvas_el = Canvas.to_el canvas in
     El.set_inline_style
       (Jstr.of_string "height")
@@ -170,13 +171,14 @@ module Clock = struct
       (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
       canvas_el;
     let signal_column =
-      El.td [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
+      Renderer_utils.td
+        [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
     in
-    let value_column = El.td [] in
+    let value_column = Renderer_utils.td [] in
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") value_column;
     Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
-    let el = El.tr [ signal_column; value_column; El.td [ canvas_el ] ] in
+    let el = El.tr [ signal_column; value_column; Renderer_utils.td [ canvas_el ] ] in
     { el; env; canvas }
   ;;
 end
