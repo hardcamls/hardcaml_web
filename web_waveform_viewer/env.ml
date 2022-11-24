@@ -24,5 +24,5 @@ let num_cycles_to_render (t : t) =
 ;;
 
 let update_half_cycle_width t ~delta =
-  t.half_cycle_width <- Int.max 100 (Int.min (t.half_cycle_width + delta) 1000)
+  t.half_cycle_width <- Int.max 1 (Int.min (t.half_cycle_width + delta) 1000)
 ;;
