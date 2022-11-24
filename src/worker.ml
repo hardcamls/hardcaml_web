@@ -10,7 +10,7 @@ module Make (Design : Design.S) = struct
     post (Messages.Worker_to_app.Error (Bytes.of_string s, parameters))
   ;;
 
-  let circuit parameters =
+  let circuit ~flatten_design parameters =
     status "Instantiating design";
     let module D =
       Design.Make (struct
@@ -18,13 +18,13 @@ module Make (Design : Design.S) = struct
       end)
     in
     let module Circuit = Hardcaml.Circuit.With_interface (D.I) (D.O) in
-    let scope = Hardcaml.Scope.create ~flatten_design:true () in
+    let scope = Hardcaml.Scope.create ~flatten_design () in
     status "Generating circuit";
     scope, Circuit.create_exn ~name:Design.top_level_name (D.create scope)
   ;;
 
   let utilization parameters =
-    let _, circuit = circuit parameters in
+    let _, circuit = circuit ~flatten_design:true parameters in
     status "Counting utilization";
     let utilization = Hardcaml.Circuit_utilization.create circuit in
     Utilization.create utilization
@@ -32,7 +32,7 @@ module Make (Design : Design.S) = struct
 
   let rtl parameters =
     let buffer = Buffer.create 1024 in
-    let scope, circuit = circuit parameters in
+    let scope, circuit = circuit ~flatten_design:false parameters in
     status "Generating RTL";
     Hardcaml.Rtl.output
       ~database:(Hardcaml.Scope.circuit_database scope)
@@ -48,11 +48,16 @@ module Make (Design : Design.S) = struct
         let parameters = parameters
       end)
     in
+    let module Sim = Hardcaml.Cyclesim.With_interface (D.I) (D.O) in
     match D.testbench with
     | None -> None
     | Some testbench ->
+      let _, circuit = circuit ~flatten_design:true parameters in
+      status "Creating simulator";
+      let sim = Hardcaml.Cyclesim.create circuit in
+      let sim = Sim.coerce sim in
       status "Running simulation";
-      let result = testbench () in
+      let result = testbench sim in
       Some result
   ;;
 

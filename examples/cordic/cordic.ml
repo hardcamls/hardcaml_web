@@ -20,9 +20,7 @@ module Make (P : Parameters.S) = struct
 
   let create _scope (i : _ I.t) = { O.q = ~:(i.d) }
 
-  let testbench () =
-    let module Sim = Cyclesim.With_interface (I) (O) in
-    let sim = Sim.create (create (Scope.create ())) in
+  let testbench (sim : (Bits.t ref I.t, Bits.t ref O.t) Cyclesim.t) =
     let inputs = Cyclesim.inputs sim in
     let waves, sim = Waveform.create sim in
     for i = 0 to 5 do

@@ -16,6 +16,8 @@ module type S = sig
     val create : Scope.t -> Signal.t Interface.Create_fn(I)(O).t
 
     (** Run a testbench *)
-    val testbench : (unit -> Testbench_result.t) option
+    val testbench
+      : ((Bits.t ref I.t, Bits.t ref O.t) Hardcaml.Cyclesim.t -> Testbench_result.t)
+        option
   end
 end
