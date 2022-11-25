@@ -3,8 +3,7 @@ open Hardcaml
 open! Hardcaml_waveterm
 open Hardcaml_web
 
-let title = "no title yet"
-let top_level_name = "no_name"
+let top_level_name = "cordic"
 let default_parameters = []
 
 module Make (P : Parameters.S) = struct
