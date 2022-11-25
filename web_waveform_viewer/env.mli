@@ -10,6 +10,6 @@ type t =
 
 val create : unit -> t
 val num_cycles_to_render : t -> int
-val update_half_cycle_width : t -> delta:int -> unit
+val update_zoom : t -> [ `In | `Out ] -> unit
 val canvas_height_in_pixels : t -> float
 val canvas_width_in_pixels : t -> float

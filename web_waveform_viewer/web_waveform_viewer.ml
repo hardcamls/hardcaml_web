@@ -82,15 +82,10 @@ let create_zoom_button ~update_view (env : Env.t) in_or_out =
            | `Out -> "Zoom Out")
       ]
   in
-  let delta =
-    match in_or_out with
-    | `In -> 50
-    | `Out -> -50
-  in
   Ev.listen
     Ev.click
     (fun (_ : Ev.Mouse.t Ev.t) ->
-      Env.update_half_cycle_width env ~delta;
+      Env.update_zoom env in_or_out;
       update_view ())
     (Ev.target_of_jv (El.to_jv btn));
   btn
