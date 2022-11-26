@@ -17,6 +17,8 @@ let find_map t name ~f =
 
 let as_int t name = find_map t name ~f:Parameter.int
 let as_int_exn t name = as_int t name |> Option.value_exn
+let as_float t name = find_map t name ~f:Parameter.float
+let as_float_exn t name = as_float t name |> Option.value_exn
 let as_string t name = find_map t name ~f:Parameter.string
 let as_string_exn t name = as_string t name |> Option.value_exn
 let as_flag t name = find_map t name ~f:Parameter.flag

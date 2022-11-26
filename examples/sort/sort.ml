@@ -10,18 +10,7 @@ let default_parameters =
     [ "data_width", { typ = Int 8; description = "data width" }
     ; "size", { typ = Int 4; description = "network size" }
     ; ( "type"
-      , { typ =
-            Symbol
-              { options =
-                  List.map Hardcaml_circuits.Sorting_network.Config.all ~f:(fun t ->
-                    Hardcaml_circuits.Sorting_network.Config.sexp_of_t t
-                    |> Sexp.to_string
-                    |> String.map ~f:(fun c ->
-                         match Char.lowercase c with
-                         | '_' -> '-'
-                         | c -> c))
-              ; value = 0
-              }
+      , { typ = Typ.of_enum (module Hardcaml_circuits.Sorting_network.Config) ~value:0
         ; description = "network type"
         } )
     ]

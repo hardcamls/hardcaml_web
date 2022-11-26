@@ -81,6 +81,18 @@ module Make (Design : Design.S) = struct
     e, fun () -> { default with typ = Int (v ()) }
   ;;
 
+  let float_input (default : Parameter.t) =
+    let e = El.input () in
+    let v () = El.prop El.Prop.value e |> Jstr.to_string |> Float.of_string in
+    El.set_at (Jstr.v "type") (Some (Jstr.v "number")) e;
+    El.set_at (Jstr.v "step") (Some (Jstr.v "0.1")) e;
+    El.set_at
+      (Jstr.v "value")
+      (Some (Jstr.v (Printf.sprintf "%.1f" (Parameter.float_exn default))))
+      e;
+    e, fun () -> { default with typ = Float (v ()) }
+  ;;
+
   (* Input element for strings *)
   let string_input (default : Parameter.t) =
     let e = El.input () in
@@ -127,6 +139,7 @@ module Make (Design : Design.S) = struct
           match typ with
           | String _ -> string_input p
           | Int _ -> int_input p
+          | Float _ -> float_input p
           | Flag _ -> flag_input p
           | Symbol _ -> symbol_input p
         in

@@ -9,6 +9,8 @@ end
 val find : t -> string -> Parameter.t option
 val as_int : t -> string -> int option
 val as_int_exn : t -> string -> int
+val as_float : t -> string -> float option
+val as_float_exn : t -> string -> float
 val as_string : t -> string -> string option
 val as_string_exn : t -> string -> string
 val as_flag : t -> string -> bool option
