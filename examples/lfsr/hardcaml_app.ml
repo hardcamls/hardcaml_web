@@ -1,1 +1,3 @@
-module _ = Hardcaml_web.App.Make (Lfsr)
+module App = Hardcaml_web.App.Make (Lfsr)
+
+let () = App.run ()

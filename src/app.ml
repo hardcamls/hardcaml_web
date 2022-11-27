@@ -310,7 +310,7 @@ module Make (Design : Design.S) = struct
     Fut.map (fun _ -> ()) (process_messages_from_worker divs buttons worker)
   ;;
 
-  let run div_id =
+  let run ?(div = "hardcaml_app") ?(javascript = "hardcaml_app.bc.js") () =
     (* Wait for document to fully load. *)
     if Brr_webworkers.Worker.ami ()
     then
@@ -320,17 +320,17 @@ module Make (Design : Design.S) = struct
       let* _ = Ev.next Ev.load (Window.as_target G.window) in
       (* Start running the js code *)
       let div_app =
-        match Document.find_el_by_id G.document (Jstr.v div_id) with
+        match Document.find_el_by_id G.document (Jstr.v div) with
         | None -> raise_s [%message "Hardcaml application div was not found"]
         | Some div_app -> div_app
       in
       let worker =
-        try Brr_webworkers.Worker.create (Jstr.v "hardcaml_app.bc.js") with
+        try Brr_webworkers.Worker.create (Jstr.v javascript) with
         | exn -> raise_s [%message "Failed to create webworker." (exn : exn)]
       in
       let* _ = run_app div_app worker in
       Fut.return ()
   ;;
 
-  let () = ignore (run "hardcaml_app")
+  let run ?div ?javascript () = ignore (run ?div ?javascript ())
 end

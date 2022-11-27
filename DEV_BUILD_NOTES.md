@@ -33,3 +33,10 @@ In the directory where all these repos exist, create a dune-project file as foll
 $ cat dune-project
 (lang dune 2.4)
 ```
+
+We are starting to work on the hardcaml\_zprize submission.  Note that the repo is currently private, so ask billy345 for access.
+
+```
+git clone https://github.com/janestreet/hardcaml_xilinx
+git clone https://github.com/fyquah/hardcaml_zprize -b port-to-latest-hardcaml
+```

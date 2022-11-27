@@ -1,1 +1,3 @@
-module _ = Hardcaml_web.App.Make (Cordic)
+module App = Hardcaml_web.App.Make (Cordic)
+
+let () = App.run ()

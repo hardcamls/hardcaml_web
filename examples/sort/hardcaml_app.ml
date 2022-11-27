@@ -1,1 +1,3 @@
-module _ = Hardcaml_web.App.Make (Sort)
+module App = Hardcaml_web.App.Make (Sort)
+
+let () = App.run ()

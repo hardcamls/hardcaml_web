@@ -1,1 +1,3 @@
-module _ = Hardcaml_web.App.Make (Mult)
+module App = Hardcaml_web.App.Make (Mult)
+
+let () = App.run ()

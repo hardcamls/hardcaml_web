@@ -1,1 +1,3 @@
-module _ = Hardcaml_web.App.Make (Rs)
+module App = Hardcaml_web.App.Make (Rs)
+
+let () = App.run ()
