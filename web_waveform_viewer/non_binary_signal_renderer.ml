@@ -76,7 +76,7 @@ module Renderer = struct
         ~x:t.starting_position.x
         ~y:t.starting_position.y
         ~w:(Float.of_int (t.current_cycles * width_per_cycle t))
-        ~h:(Float.of_int t.env.signal_height);
+        ~h:(Float.of_int t.env.value_box_height);
       (* Render the text *)
       Option.iter string_to_render ~f:(fun string_to_render ->
         C2d.fill_text
@@ -132,7 +132,7 @@ let redraw (t : t) =
     Renderer.create
       ~bits_to_string:t.bits_to_string
       ~x:Constants.x_offset_to_start_of_signal
-      ~y:Constants.y_offset_to_start_of_signal
+      ~y:Constants.y_offset_to_start_of_value_box
       ~env:t.env
       ctx
   in

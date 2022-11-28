@@ -68,10 +68,10 @@ module Bit = struct
     in
     let path_builder =
       Path_builder.create
-        ~x:2.0
-        ~y:2.0
+        ~x:Constants.x_offset_to_start_of_signal
+        ~y:Constants.y_offset_to_start_of_binary_signal
         ~half_cycle_width:env.half_cycle_width
-        ~signal_height:env.signal_height
+        ~signal_height:env.binary_signal_height
     in
     let num_cycles_to_render = Env.num_cycles_to_render env in
     for i = 0 to num_cycles_to_render - 1 do
@@ -140,10 +140,10 @@ module Clock = struct
     let ctx = C2d.get_context canvas in
     let path_builder =
       Path_builder.create
-        ~x:2.0
-        ~y:2.0
+        ~x:Constants.x_offset_to_start_of_signal
+        ~y:Constants.y_offset_to_start_of_binary_signal
         ~half_cycle_width:env.half_cycle_width
-        ~signal_height:env.signal_height
+        ~signal_height:env.binary_signal_height
     in
     for _ = 0 to Env.num_cycles_to_render env - 1 do
       Path_builder.step path_builder true;

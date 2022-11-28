@@ -2,7 +2,8 @@ type t =
   { mutable starting_cycle : int
   ; mutable selected_cycle : int
   ; mutable half_cycle_width : int
-  ; mutable signal_height : int
+  ; mutable value_box_height : int
+  ; mutable binary_signal_height : int
   ; mutable canvas_height : int
   ; mutable canvas_width : int
   ; num_cycles_in_waveform : int

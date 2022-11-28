@@ -6,7 +6,8 @@ type t =
   { mutable starting_cycle : int
   ; mutable selected_cycle : int
   ; mutable half_cycle_width : int
-  ; mutable signal_height : int
+  ; mutable value_box_height : int
+  ; mutable binary_signal_height : int
   ; mutable canvas_height : int
   ; mutable canvas_width : int
   ; num_cycles_in_waveform : int
@@ -25,10 +26,11 @@ let create waveform =
   in
   { starting_cycle = 0
   ; selected_cycle = 0
-  ; half_cycle_width = 30 * Constants.canvas_scaling_factor
-  ; signal_height = 30 * Constants.canvas_scaling_factor
-  ; canvas_width = 1000 * Constants.canvas_scaling_factor
-  ; canvas_height = 50 * Constants.canvas_scaling_factor
+  ; half_cycle_width = Constants.initial_half_cycle_width
+  ; value_box_height = Constants.initial_value_box_height
+  ; binary_signal_height = Constants.initial_binary_signal_height
+  ; canvas_width = Constants.initial_canvas_width
+  ; canvas_height = Constants.initial_canvas_height
   ; num_cycles_in_waveform
   ; waveform
   }
