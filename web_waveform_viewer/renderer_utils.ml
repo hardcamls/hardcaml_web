@@ -69,3 +69,16 @@ let td xs =
   El.set_inline_style (Jstr.v "padding-right") (Jstr.v "10px") e;
   e
 ;;
+
+let value_column xs =
+  let e = td xs in
+  El.set_inline_style (Jstr.v "text-align") (Jstr.v "right") e;
+  e
+;;
+
+let signal_column xs =
+  let e = td xs in
+  e
+;;
+
+let wave_column xs = td xs

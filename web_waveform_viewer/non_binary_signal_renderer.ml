@@ -171,9 +171,9 @@ let create
       Bits_to_string.hex
     | Bit | Bit_or _ -> (* Impossible. *) assert false
   in
-  let values_column = Renderer_utils.td [] in
+  let values_column = Renderer_utils.value_column [] in
   let signal_column =
-    Renderer_utils.td [ El.txt' (Bytes.to_string (Bytes.of_string name)) ]
+    Renderer_utils.signal_column [ El.txt' (Bytes.to_string (Bytes.of_string name)) ]
   in
   El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
   El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") values_column;
@@ -190,7 +190,8 @@ let create
   let t =
     { canvas
     ; values_column
-    ; el = El.tr [ signal_column; values_column; Renderer_utils.td [ canvas_el ] ]
+    ; el =
+        El.tr [ signal_column; values_column; Renderer_utils.wave_column [ canvas_el ] ]
     ; env
     ; bits_to_string
     ; data

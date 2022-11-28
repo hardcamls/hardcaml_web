@@ -104,17 +104,18 @@ module Bit = struct
       (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
       canvas_el;
     let signal_column =
-      Renderer_utils.td
+      Renderer_utils.signal_column
         [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
     in
-    let value_column = Renderer_utils.td [] in
+    let value_column = Renderer_utils.value_column [] in
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") value_column;
     Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
     let t =
       { canvas
       ; env
-      ; el = El.tr [ signal_column; value_column; Renderer_utils.td [ canvas_el ] ]
+      ; el =
+          El.tr [ signal_column; value_column; Renderer_utils.wave_column [ canvas_el ] ]
       ; value_column
       ; data
       }
@@ -167,14 +168,16 @@ module Clock = struct
       (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
       canvas_el;
     let signal_column =
-      Renderer_utils.td
+      Renderer_utils.signal_column
         [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
     in
-    let value_column = Renderer_utils.td [] in
+    let value_column = Renderer_utils.value_column [] in
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") value_column;
     Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
-    let el = El.tr [ signal_column; value_column; Renderer_utils.td [ canvas_el ] ] in
+    let el =
+      El.tr [ signal_column; value_column; Renderer_utils.wave_column [ canvas_el ] ]
+    in
     { el; env; canvas }
   ;;
 end
