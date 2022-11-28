@@ -2,6 +2,7 @@ open Core
 open Brr
 open Brr_canvas
 open Hardcaml
+module Text_alignment = Hardcaml_waveterm.Text_alignment
 
 module Position = struct
   type t =
@@ -19,21 +20,29 @@ module Renderer = struct
     ; env : Env.t
     ; context : C2d.t
     ; bits_to_string : Bits.t -> string
+    ; alignment : Text_alignment.t
     }
 
-  let create ~x ~y ~bits_to_string ~env context =
+  let create ~x ~y ~bits_to_string ~env ~alignment context =
     { last_value = None
     ; starting_position = { x; y }
     ; current_cycles = 0
     ; context
     ; env
     ; bits_to_string
+    ; alignment
     }
   ;;
 
   let width_per_cycle (t : t) = 2 * t.env.half_cycle_width
 
-  let create_value_to_render ~max_width_allowed ~value ~ctx ~bits_to_string =
+  let create_value_to_render
+    ~max_width_allowed
+    ~value
+    ~ctx
+    ~bits_to_string
+    ~(alignment : Text_alignment.t)
+    =
     let can_fit x =
       let text_metric = C2d.measure_text ctx (Jstr.of_string x) in
       let width = C2d.Text_metrics.width text_metric in
@@ -48,9 +57,16 @@ module Renderer = struct
         match text with
         | "" -> ()
         | _ ->
-          let candidate = text ^ ".." in
+          let candidate =
+            match alignment with
+            | Left -> text ^ ".."
+            | Right -> ".." ^ text
+          in
           if can_fit candidate then return (Some candidate);
-          loop (String.subo ~len:(String.length text - 1) text)
+          loop
+            (match alignment with
+             | Left -> String.subo ~len:(String.length text - 1) text
+             | Right -> String.subo ~pos:1 text)
       in
       loop value;
       (* If nothing fits, try a dot. *)
@@ -69,6 +85,7 @@ module Renderer = struct
           ~value:last_value
           ~ctx:context
           ~bits_to_string:t.bits_to_string
+          ~alignment:t.alignment
       in
       (* Draw the rectangle *)
       C2d.stroke_rect
@@ -111,6 +128,7 @@ type t =
   ; env : Env.t
   ; el : El.t
   ; data : Hardcaml_waveterm.Expert.Data.t
+  ; alignment : Text_alignment.t
   }
 
 let el t = t.el
@@ -134,6 +152,7 @@ let redraw (t : t) =
       ~x:Constants.x_offset_to_start_of_signal
       ~y:Constants.y_offset_to_start_of_value_box
       ~env:t.env
+      ~alignment:t.alignment
       ctx
   in
   for i = 0 to num_cycles_to_render - 1 do
@@ -155,6 +174,7 @@ let create
   ~(name : string)
   ~(data : Hardcaml_waveterm.Expert.Data.t)
   ~(wave_format : Hardcaml_waveterm.Wave_format.t)
+  ~(alignment : Text_alignment.t)
   ~update_view
   (env : Env.t)
   =
@@ -195,6 +215,7 @@ let create
     ; env
     ; bits_to_string
     ; data
+    ; alignment
     }
   in
   redraw t;

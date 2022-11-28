@@ -27,7 +27,7 @@ let rec create_view_for_wave
          ; handle = Binary_signal_renderer.Clock.create env ~update_view ~name
          })
   | Binary (name, data) -> create_bit ~name ~data
-  | Data (name, data, wave_format, _alignment) ->
+  | Data (name, data, wave_format, alignment) ->
     (match wave_format with
      | Bit -> create_bit ~name ~data
      | Bit_or wave_format ->
@@ -35,16 +35,14 @@ let rec create_view_for_wave
           && Bits.width (Hardcaml_waveterm.Expert.Data.get data 0) = 1
        then create_bit ~name ~data
        else
-         create_view_for_wave
-           ~update_view
-           env
-           (Data (name, data, wave_format, _alignment))
+         create_view_for_wave ~update_view env (Data (name, data, wave_format, alignment))
      | Binary | Hex | Unsigned_int | Int | Index _ | Custom _ ->
        Some
          (View_element.T
             { impl = (module Non_binary_signal_renderer)
             ; handle =
                 Non_binary_signal_renderer.create
+                  ~alignment
                   ~update_view
                   ~name
                   ~data
