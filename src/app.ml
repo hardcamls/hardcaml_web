@@ -225,13 +225,8 @@ module Make (Design : Design.S) = struct
 
   let testbench_result div (result : Testbench_result.t) =
     let waves =
-      Option.map result.waves ~f:(fun { waves; options; rules } ->
-        let _display_width = Option.map options ~f:(fun o -> o.display_width) in
-        let _display_height = Option.map options ~f:(fun o -> o.display_height) in
-        let _start_cycle = Option.map options ~f:(fun o -> o.start_cycle) in
-        let _wave_width = Option.map options ~f:(fun o -> o.wave_width) in
-        let _display_rules = rules in
-        El.div [ Hardcaml_web_waveform_viewer.render waves ])
+      Option.map result.waves ~f:(fun { waves; options = _; rules } ->
+        El.div [ Hardcaml_web_waveform_viewer.render ~display_rules:rules waves ])
     in
     let result =
       Option.map result.result ~f:(function

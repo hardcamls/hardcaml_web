@@ -1,6 +1,9 @@
 open! Base
 open Brr
 module Bits = Hardcaml.Bits
+module Display_rule = Hardcaml_waveterm.Display_rule
+module Display_rules = Hardcaml_waveterm.Display_rules
+module Waveform = Hardcaml_waveterm.Waveform
 
 let sprintf = Printf.sprintf
 
@@ -91,10 +94,13 @@ let create_zoom_button ~update_view (env : Env.t) in_or_out =
   btn
 ;;
 
-let render (waveform : Hardcaml_waveterm.Waveform.t) =
+let render
+  ~(display_rules : Display_rules.t option)
+  (waveform : Hardcaml_waveterm.Waveform.t)
+  =
   let open El in
   let env = Env.create waveform in
-  let waves = Hardcaml_waveterm.Waveform.waves waveform in
+  let waves = Waveform.sort_ports_and_formats waveform display_rules in
   let counters_div = div [] in
   let rec update_view () =
     El.set_children
