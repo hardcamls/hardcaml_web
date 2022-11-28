@@ -38,7 +38,7 @@ module Make (P : Parameters.S) = struct
 
   open Signal
 
-  let create _scope (i : _ I.t) =
+  let create _scope ~build_mode:_ (i : _ I.t) =
     let spec = Hardcaml.Reg_spec.create ~clock:i.clock ~clear:i.clear () in
     let piped d = if piped then reg spec d else d in
     let rec muls coefs d =

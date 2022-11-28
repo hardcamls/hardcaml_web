@@ -64,7 +64,7 @@ module Make (P : Parameters.S) = struct
   module I = Decoder.I
   module O = Decoder.O
 
-  let create = Decoder.create
+  let create scope ~build_mode:_ i = Decoder.create scope i
 
   let rules =
     let module I = Display_rules.With_interface (Decoder.I) in

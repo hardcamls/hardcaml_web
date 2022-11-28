@@ -72,7 +72,7 @@ module Make (P : Parameters.S) = struct
 
   module O = Cordic.O
 
-  let create _scope (i : _ I.t) =
+  let create _scope ~build_mode:_ (i : _ I.t) =
     Cordic.create
       { Hardcaml_circuits.Cordic.Config.architecture; iterations }
       { Cordic.I.clk = i.clock

@@ -42,7 +42,7 @@ module Make (P : Parameters.S) = struct
     { Hardcaml_circuits.Sorting_network.Min_max.min = mux2 lt a b; max = mux2 lt b a }
   ;;
 
-  let create _scope (i : _ I.t) =
+  let create _scope ~build_mode:_ (i : _ I.t) =
     { O.q = Hardcaml_circuits.Sorting_network.create network_type compare_and_swap i.d }
   ;;
 

@@ -33,7 +33,7 @@ module Make (P : Parameters.S) = struct
   module I = Rac.I
   module O = Rac.O
 
-  let create _scope (i : _ I.t) =
+  let create _scope ~build_mode:_ (i : _ I.t) =
     let coefs = Array.init num_coefs ~f:(fun _ -> Random.float 7.9 -. 3.95) in
     let scale = Float.(2. ** Float.of_int coef_prec) in
     let coefs =

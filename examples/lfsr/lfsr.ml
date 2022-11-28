@@ -44,7 +44,7 @@ module Make (P : Parameters.S) = struct
     type 'a t = { next : 'a [@bits data_width] } [@@deriving sexp_of, hardcaml]
   end
 
-  let create _scope (i : _ I.t) =
+  let create _scope ~build_mode:_ (i : _ I.t) =
     { O.next =
         Hardcaml_circuits.Lfsr.create
           ~config

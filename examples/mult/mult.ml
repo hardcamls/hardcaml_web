@@ -35,7 +35,7 @@ module Make (P : Parameters.S) = struct
     type 'a t = { c : 'a [@bits data_width * 2] } [@@deriving sexp_of, hardcaml]
   end
 
-  let create _scope (i : _ I.t) =
+  let create _scope ~build_mode:_ (i : _ I.t) =
     { O.c = Hardcaml_circuits.Mul.create ~config:style (module Signal) i.a i.b }
   ;;
 

@@ -42,7 +42,7 @@ module Make (P : Parameters.S) = struct
 
   module Sum = Hardcaml_circuits.Prefix_sum
 
-  let create _scope (i : _ I.t) =
+  let create _scope ~build_mode:_ (i : _ I.t) =
     let must_be_power_of_2 =
       match network with
       | Serial | Sklansky -> false
