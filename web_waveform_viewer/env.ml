@@ -50,10 +50,10 @@ let num_cycles_to_render (t : t) =
 let update_zoom t in_or_out =
   let next_half_cycle_width =
     match in_or_out with
-    | `In -> t.half_cycle_width * 2
-    | `Out -> t.half_cycle_width / 2
+    | `In -> Float.of_int t.half_cycle_width *. 1.5
+    | `Out -> Float.of_int t.half_cycle_width /. 1.5
   in
-  t.half_cycle_width <- Int.max 1 (Int.min next_half_cycle_width 1000)
+  t.half_cycle_width <- Int.max 1 (Int.min (Float.to_int next_half_cycle_width) 1000)
 ;;
 
 let canvas_height_in_pixels env =
