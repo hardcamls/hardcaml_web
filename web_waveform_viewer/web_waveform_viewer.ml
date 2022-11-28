@@ -93,7 +93,7 @@ let create_zoom_button ~update_view (env : Env.t) in_or_out =
 
 let render (waveform : Hardcaml_waveterm.Waveform.t) =
   let open El in
-  let env = Env.create () in
+  let env = Env.create waveform in
   let waves = Hardcaml_waveterm.Waveform.waves waveform in
   let counters_div = div [] in
   let rec update_view () =

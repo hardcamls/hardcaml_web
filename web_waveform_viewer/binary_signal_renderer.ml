@@ -73,11 +73,7 @@ module Bit = struct
         ~half_cycle_width:env.half_cycle_width
         ~signal_height:env.signal_height
     in
-    let num_cycles_to_render =
-      Int.min
-        (Hardcaml_waveterm.Expert.Data.length data - env.starting_cycle)
-        (Env.num_cycles_to_render env)
-    in
+    let num_cycles_to_render = Env.num_cycles_to_render env in
     for i = 0 to num_cycles_to_render - 1 do
       Path_builder.step
         path_builder

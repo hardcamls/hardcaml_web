@@ -31,7 +31,7 @@ let update_current_cycle_on_click ~canvas_el ~update_view ~(env : Env.t) =
         Float.to_int (mouse_x -. Constants.x_offset_to_start_of_signal)
         / (2 * env.half_cycle_width)
       in
-      env.selected_cycle <- env.starting_cycle + cycle_offset;
+      Env.update_selected_cycle env (env.starting_cycle + cycle_offset);
       update_view ())
     (Ev.target_of_jv (El.to_jv canvas_el))
 ;;
