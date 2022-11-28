@@ -11,37 +11,56 @@ module Path_builder : sig
   val step : t -> bool -> unit
   val path : t -> C2d.Path.t
 end = struct
+  module Last_value = struct
+    type t =
+      | False
+      | True
+      | Nothing
+    [@@deriving equal]
+
+    let of_bool = function
+      | true -> True
+      | false -> False
+    ;;
+  end
+
   type t =
     { path : C2d.Path.t
     ; signal_height : int
     ; half_cycle_width : int
     ; mutable x : float
     ; mutable y : float
-    ; mutable last_value : bool
+    ; mutable last_value : Last_value.t
     }
   [@@deriving fields]
 
   let create ~x ~y ~half_cycle_width ~signal_height =
     let path = C2d.Path.create () in
     C2d.Path.move_to path ~x ~y;
-    { path; x; y; last_value = true; half_cycle_width; signal_height }
+    { path; x; y; last_value = Nothing; half_cycle_width; signal_height }
   ;;
 
-  let line_to (t : t) ~dx ~dy =
+  let line_or_move_to (t : t) ~dx ~dy ~f =
     let x = t.x +. Float.of_int dx in
     let y = t.y +. Float.of_int dy in
-    C2d.Path.line_to t.path ~x ~y;
+    f t.path ~x ~y;
     t.x <- x;
     t.y <- y
   ;;
 
+  let line_to t ~dx ~dy = line_or_move_to t ~dx ~dy ~f:C2d.Path.line_to
+  let move_to t ~dx ~dy = line_or_move_to t ~dx ~dy ~f:C2d.Path.move_to
   let rise t = line_to t ~dx:0 ~dy:(Int.neg t.signal_height)
   let right t = line_to t ~dx:t.half_cycle_width ~dy:0
   let fall t = line_to t ~dx:0 ~dy:t.signal_height
 
   let step (t : t) tf =
-    if not (Bool.equal tf t.last_value) then if tf then rise t else fall t;
-    t.last_value <- tf;
+    (match t.last_value with
+     | Nothing -> if not tf then move_to t ~dx:0 ~dy:t.signal_height
+     | True | False ->
+       if not (Last_value.equal (Last_value.of_bool tf) t.last_value)
+       then if tf then rise t else fall t);
+    t.last_value <- Last_value.of_bool tf;
     right t
   ;;
 end
