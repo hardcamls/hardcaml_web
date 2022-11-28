@@ -54,22 +54,33 @@ let rec create_view_for_wave
   | Empty _ -> None
 ;;
 
-let create_update_starting_cycle_button ~update_view (env : Env.t) incr_or_decr =
+module Update_starting_cycle_action = struct
+  type t =
+    | Delta of
+        { icon : string
+        ; delta : int
+        }
+    | Fast_forward of string
+    | Fast_backward of string
+end
+
+let create_update_starting_cycle_button ~update_view (env : Env.t) ~action =
   let btn =
     let open El in
     button
       [ txt'
-          (match incr_or_decr with
-           | `Incr -> ">"
-           | `Decr -> "<")
+          (match action with
+           | Update_starting_cycle_action.Delta { icon; delta = _ } -> icon
+           | Fast_forward icon | Fast_backward icon -> icon)
       ]
   in
   Ev.listen
     Ev.click
     (fun (_ : Ev.Mouse.t Ev.t) ->
-      (match incr_or_decr with
-       | `Incr -> env.starting_cycle <- env.starting_cycle + 1
-       | `Decr -> env.starting_cycle <- Int.max 0 (env.starting_cycle - 1));
+      (match action with
+       | Delta { icon = _; delta } -> Env.update_starting_cycle_with_delta env ~delta
+       | Fast_forward _ -> Env.update_starting_cycle_to_end env
+       | Fast_backward _ -> Env.update_starting_cycle_to_begin env);
       update_view ())
     (Ev.target_of_jv (El.to_jv btn));
   btn
@@ -126,8 +137,30 @@ let render
   El.set_inline_style (Jstr.v "border-spacing") (Jstr.v "0") waves_table;
   div
     [ p
-        [ create_update_starting_cycle_button env `Decr ~update_view
-        ; create_update_starting_cycle_button env `Incr ~update_view
+        [ create_update_starting_cycle_button
+            env
+            ~action:(Fast_backward "|<<")
+            ~update_view
+        ; create_update_starting_cycle_button
+            env
+            ~action:(Delta { icon = "<<"; delta = -10 })
+            ~update_view
+        ; create_update_starting_cycle_button
+            env
+            ~action:(Delta { icon = "<"; delta = -1 })
+            ~update_view
+        ; create_update_starting_cycle_button
+            env
+            ~action:(Delta { icon = ">"; delta = 1 })
+            ~update_view
+        ; create_update_starting_cycle_button
+            env
+            ~action:(Delta { icon = ">>"; delta = 10 })
+            ~update_view
+        ; create_update_starting_cycle_button
+            env
+            ~action:(Fast_forward ">>|")
+            ~update_view
         ; create_zoom_button ~update_view env `In
         ; create_zoom_button ~update_view env `Out
         ]

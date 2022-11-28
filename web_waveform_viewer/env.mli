@@ -16,3 +16,6 @@ val update_zoom : t -> [ `In | `Out ] -> unit
 val canvas_height_in_pixels : t -> float
 val canvas_width_in_pixels : t -> float
 val update_selected_cycle : t -> int -> unit
+val update_starting_cycle_with_delta : t -> delta:int -> unit
+val update_starting_cycle_to_begin : t -> unit
+val update_starting_cycle_to_end : t -> unit
