@@ -107,6 +107,47 @@ let set_scroll_left (el : El.t) (value : float) : unit =
   Jv.set (Jv.repr el) "scrollLeft" (Jv.of_float value)
 ;;
 
+let set_timeout ~ms ~f =
+  let (_ : unit Fut.t) =
+    let open Fut.Syntax in
+    let* () = Fut.tick ~ms in
+    let () = f () in
+    Fut.return ()
+  in
+  ()
+;;
+
+module Column_spec = struct
+  type t =
+    { header_name : string
+    ; accessor : Wave_row.t -> Brr.El.t
+    ; flex_pc : int
+    ; scroll_to_right : bool
+    }
+end
+
+let column_specs =
+  let open Column_spec in
+  let signal_width = 5 in
+  let value_width = 5 in
+  [ { header_name = "Signals"
+    ; accessor = Wave_row.signal_column
+    ; flex_pc = signal_width
+    ; scroll_to_right = false
+    }
+  ; { header_name = "Values"
+    ; accessor = Wave_row.value_column
+    ; flex_pc = value_width
+    ; scroll_to_right = true
+    }
+  ; { header_name = "Waves"
+    ; accessor = Wave_row.wave_column
+    ; flex_pc = 100 - signal_width - value_width
+    ; scroll_to_right = false
+    }
+  ]
+;;
+
 let render
   ~(display_rules : Display_rules.t option)
   (waveform : Hardcaml_waveterm.Waveform.t)
@@ -129,26 +170,25 @@ let render
   let views_for_waves = Lazy.force views_for_waves in
   update_view ();
   let waves_div =
-    let specs =
-      let signal_width = 5 in
-      let value_width = 5 in
-      [ "Signals", Wave_row.signal_column, signal_width
-      ; "Values", Wave_row.value_column, value_width
-      ; "Waves", Wave_row.wave_column, 100 - signal_width - value_width
-      ]
+    let column_style = At.style (Jstr.v "padding: 5px") in
+    let row_style =
+      At.style (Jstr.v "display: flex; margin-left: -5px; margin-right: -5px;")
     in
     let header =
-      List.map specs ~f:(fun (column_name, _accessor, flex_pc) ->
+      List.map column_specs ~f:(fun column_spec ->
+        let { Column_spec.header_name; accessor; flex_pc; scroll_to_right = _ } =
+          column_spec
+        in
         div
-          ~at:
-            [ At.class' (Jstr.v "column")
-            ; At.style (Jstr.v (sprintf "flex: %d%%;" flex_pc))
-            ]
-          [ b [ txt' column_name ] ])
-      |> div ~at:[ At.class' (Jstr.v "row") ]
+          ~at:[ column_style; At.style (Jstr.v (sprintf "flex: %d%%;" flex_pc)) ]
+          [ b [ txt' header_name ] ])
+      |> div ~at:[ row_style ]
     in
     let body =
-      List.map specs ~f:(fun (_column_name, accessor, flex_pc) ->
+      List.map column_specs ~f:(fun column_spec ->
+        let { Column_spec.header_name; accessor; flex_pc; scroll_to_right } =
+          column_spec
+        in
         let table =
           table
             [ tbody
@@ -170,15 +210,15 @@ let render
         let div =
           div
             ~at:
-              [ At.class' (Jstr.v "column")
+              [ column_style
               ; At.style (Jstr.v (sprintf "flex: %d%%; overflow-x: auto;" flex_pc))
               ]
             [ table ]
         in
-        (* TODO(fyquah): Run this with setTimeOut(0), but how..?) *)
-        set_scroll_left div 999999.9;
+        if scroll_to_right
+        then set_timeout ~ms:0 ~f:(fun () -> set_scroll_left div 999999.9);
         div)
-      |> El.div ~at:[ At.class' (Jstr.v "row") ]
+      |> El.div ~at:[ row_style ]
     in
     div [ header; body ]
   in
