@@ -117,9 +117,19 @@ let set_timeout ~ms ~f =
   ()
 ;;
 
+module Column_name = struct
+  type t =
+    | Signals
+    | Values
+    | Waves
+  [@@deriving sexp_of, equal]
+
+  let to_string x = Sexp.to_string_mach (sexp_of_t x)
+end
+
 module Column_spec = struct
   type t =
-    { header_name : string
+    { column_name : Column_name.t
     ; accessor : Brr.El.t Wave_row.t -> Brr.El.t
     ; flex_pc : int
     ; scroll_to_right : bool
@@ -130,17 +140,17 @@ let column_specs =
   let open Column_spec in
   let signal_width = 5 in
   let value_width = 5 in
-  [ { header_name = "Signals"
+  [ { column_name = Signals
     ; accessor = Wave_row.signal_column
     ; flex_pc = signal_width
     ; scroll_to_right = false
     }
-  ; { header_name = "Values"
+  ; { column_name = Values
     ; accessor = Wave_row.value_column
     ; flex_pc = value_width
     ; scroll_to_right = true
     }
-  ; { header_name = "Waves"
+  ; { column_name = Waves
     ; accessor = Wave_row.wave_column
     ; flex_pc = 100 - signal_width - value_width
     ; scroll_to_right = false
@@ -175,17 +185,17 @@ let render
   in
   let waves_header =
     List.map column_specs ~f:(fun column_spec ->
-      let { Column_spec.header_name; accessor = _; flex_pc; scroll_to_right = _ } =
+      let { Column_spec.column_name; accessor = _; flex_pc; scroll_to_right = _ } =
         column_spec
       in
       div
         ~at:[ column_style; At.style (Jstr.v (sprintf "flex: %d%%;" flex_pc)) ]
-        [ b [ txt' header_name ] ])
+        [ b [ txt' (Column_name.to_string column_name) ] ])
     |> div ~at:[ row_style ]
   in
   let columns =
     List.map column_specs ~f:(fun column_spec ->
-      let { Column_spec.header_name = _; accessor; flex_pc; scroll_to_right } =
+      let { Column_spec.column_name = _; accessor; flex_pc; scroll_to_right } =
         column_spec
       in
       let table =
@@ -214,11 +224,24 @@ let render
       then set_timeout ~ms:0 ~f:(fun () -> set_scroll_left div 999999.9);
       div)
   in
-  set_timeout ~ms:0 ~f:(fun () ->
-    let wave_column = List.nth_exn columns 2 in
-    let w = El.bound_w wave_column in
-    Env.set_canvas_width_in_pixels env (w -. 30.0);
-    update_view ());
+  let update_canvas_width_on_resize =
+    let wave_column =
+      let%bind.Option i, _ =
+        List.findi column_specs ~f:(fun _ c -> Column_name.equal c.column_name Waves)
+      in
+      List.nth columns i
+    in
+    fun () ->
+      Option.iter wave_column ~f:(fun wave_column ->
+        let w = El.bound_w wave_column in
+        Env.set_canvas_width_in_pixels env (w -. 30.0);
+        update_view ())
+  in
+  set_timeout ~ms:0 ~f:update_canvas_width_on_resize;
+  Ev.listen
+    Ev.resize
+    (fun (_ : _ Ev.t) -> update_canvas_width_on_resize ())
+    (Ev.target_of_jv (Window.to_jv G.window));
   let waves_div = div [ waves_header; El.div ~at:[ row_style ] columns ] in
   div
     [ p
