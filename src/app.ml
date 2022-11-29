@@ -223,7 +223,7 @@ module Make (Design : Design.S) = struct
     El.set_children div [ El.table els ]
   ;;
 
-  let testbench_result div (result : Testbench_result.t) =
+  let render_testbench_result div (result : Testbench_result.t) =
     let waves =
       Option.map result.waves ~f:(fun { waves; options = _; rules } ->
         El.div [ Hardcaml_web_waveform_viewer.render ~display_rules:rules waves ])
@@ -271,7 +271,12 @@ module Make (Design : Design.S) = struct
           ~contents:(Bytes.to_string rtl);
         clear ()
       | Simulation result ->
-        Option.iter result ~f:(fun result -> testbench_result divs.simulation result);
+        (match result with
+         | Some result -> render_testbench_result divs.simulation result
+         | None ->
+           El.set_children
+             divs.simulation
+             [ El.txt' "Simulation not available for design, sorry!" ]);
         clear ()
       | Error (msg, parameters) ->
         El.set_children
