@@ -236,7 +236,7 @@ let render
     fun () ->
       Option.iter wave_column ~f:(fun wave_column ->
         let w = El.bound_w wave_column in
-        Env.set_canvas_width_in_pixels env (w -. 30.0);
+        Env.set_canvas_width_in_pixels env (w -. 50.0);
         update_view ())
   in
   set_timeout ~ms:0 ~f:update_canvas_width_on_resize;
