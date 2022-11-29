@@ -70,7 +70,7 @@ module Bit = struct
     { canvas : Canvas.t
     ; env : Env.t
     ; value_column : El.t
-    ; wave_row : Wave_row.t
+    ; wave_row : El.t Wave_row.t
     ; data : Hardcaml_waveterm.Expert.Data.t
     }
   [@@deriving fields]
@@ -149,7 +149,7 @@ end
 
 module Clock = struct
   type t =
-    { wave_row : Wave_row.t
+    { wave_row : El.t Wave_row.t
     ; env : Env.t
     ; canvas : Canvas.t
     }

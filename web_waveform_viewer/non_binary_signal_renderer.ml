@@ -123,10 +123,11 @@ end
 
 type t =
   { canvas : Canvas.t
+  ; canvas_el : El.t
   ; value_column : El.t
   ; bits_to_string : Bits.t -> string
   ; env : Env.t
-  ; wave_row : Wave_row.t
+  ; wave_row : Brr.El.t Wave_row.t
   ; data : Hardcaml_waveterm.Expert.Data.t
   ; alignment : Text_alignment.t
   }
@@ -134,6 +135,16 @@ type t =
 let wave_row t = t.wave_row
 
 let redraw (t : t) =
+  Canvas.set_h t.canvas t.env.canvas_height;
+  Canvas.set_w t.canvas t.env.canvas_width;
+  El.set_inline_style
+    (Jstr.of_string "height")
+    (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels t.env)))
+    t.canvas_el;
+  El.set_inline_style
+    (Jstr.of_string "width")
+    (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels t.env)))
+    t.canvas_el;
   Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
   let ctx = C2d.get_context t.canvas in
   C2d.set_line_width ctx Constants.signal_line_width;
@@ -198,17 +209,10 @@ let create
   El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
   El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") value_column;
   let canvas_el = Canvas.to_el canvas in
-  El.set_inline_style
-    (Jstr.of_string "height")
-    (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels env)))
-    canvas_el;
-  El.set_inline_style
-    (Jstr.of_string "width")
-    (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
-    canvas_el;
   Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
   let t =
     { canvas
+    ; canvas_el
     ; value_column
     ; wave_row =
         { signal_column

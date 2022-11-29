@@ -65,6 +65,14 @@ let canvas_width_in_pixels env =
   Float.of_int env.canvas_width /. Float.of_int Constants.canvas_scaling_factor
 ;;
 
+let set_canvas_height_in_pixels (t : t) x =
+  t.canvas_height <- Float.to_int (x *. Float.of_int Constants.canvas_scaling_factor)
+;;
+
+let set_canvas_width_in_pixels (t : t) x =
+  t.canvas_width <- Float.to_int (x *. Float.of_int Constants.canvas_scaling_factor)
+;;
+
 let update_selected_cycle (t : t) x =
   t.selected_cycle <- Int.max 0 (Int.min x (t.num_cycles_in_waveform - 1))
 ;;

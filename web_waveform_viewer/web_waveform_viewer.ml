@@ -120,7 +120,7 @@ let set_timeout ~ms ~f =
 module Column_spec = struct
   type t =
     { header_name : string
-    ; accessor : Wave_row.t -> Brr.El.t
+    ; accessor : Brr.El.t Wave_row.t -> Brr.El.t
     ; flex_pc : int
     ; scroll_to_right : bool
     }
@@ -169,59 +169,55 @@ let render
   in
   let views_for_waves = Lazy.force views_for_waves in
   update_view ();
-  let waves_div =
-    let column_style = At.style (Jstr.v "padding: 5px") in
-    let row_style =
-      At.style (Jstr.v "display: flex; margin-left: -5px; margin-right: -5px;")
-    in
-    let header =
-      List.map column_specs ~f:(fun column_spec ->
-        let { Column_spec.header_name; accessor; flex_pc; scroll_to_right = _ } =
-          column_spec
-        in
-        div
-          ~at:[ column_style; At.style (Jstr.v (sprintf "flex: %d%%;" flex_pc)) ]
-          [ b [ txt' header_name ] ])
-      |> div ~at:[ row_style ]
-    in
-    let body =
-      List.map column_specs ~f:(fun column_spec ->
-        let { Column_spec.header_name; accessor; flex_pc; scroll_to_right } =
-          column_spec
-        in
-        let table =
-          table
-            [ tbody
-                (List.map views_for_waves ~f:(fun view ->
-                   tr
-                     ~at:
-                       [ At.style
-                           (Jstr.v
-                              (sprintf
-                                 "line-height: %fpx"
-                                 (Env.canvas_height_in_pixels env)))
-                       ]
-                     [ accessor (View_element.wave_row view) ]))
-            ]
-        in
-        El.set_at (Jstr.v "cellspacing") (Some (Jstr.v "0")) table;
-        El.set_inline_style (Jstr.v "border-collapse") (Jstr.v "collapse") table;
-        El.set_inline_style (Jstr.v "border-spacing") (Jstr.v "0") table;
-        let div =
-          div
-            ~at:
-              [ column_style
-              ; At.style (Jstr.v (sprintf "flex: %d%%; overflow-x: auto;" flex_pc))
-              ]
-            [ table ]
-        in
-        if scroll_to_right
-        then set_timeout ~ms:0 ~f:(fun () -> set_scroll_left div 999999.9);
-        div)
-      |> El.div ~at:[ row_style ]
-    in
-    div [ header; body ]
+  let column_style = At.style (Jstr.v "padding: 5px") in
+  let row_style =
+    At.style (Jstr.v "display: flex; margin-left: -5px; margin-right: -5px;")
   in
+  let waves_header =
+    List.map column_specs ~f:(fun column_spec ->
+      let { Column_spec.header_name; accessor; flex_pc; scroll_to_right = _ } =
+        column_spec
+      in
+      div
+        ~at:[ column_style; At.style (Jstr.v (sprintf "flex: %d%%;" flex_pc)) ]
+        [ b [ txt' header_name ] ])
+    |> div ~at:[ row_style ]
+  in
+  let waves_body =
+    List.map column_specs ~f:(fun column_spec ->
+      let { Column_spec.header_name; accessor; flex_pc; scroll_to_right } = column_spec in
+      let table =
+        table
+          [ tbody
+              (List.map views_for_waves ~f:(fun view ->
+                 tr
+                   ~at:
+                     [ At.style
+                         (Jstr.v
+                            (sprintf
+                               "line-height: %fpx"
+                               (Env.canvas_height_in_pixels env)))
+                     ]
+                   [ accessor (View_element.wave_row view) ]))
+          ]
+      in
+      El.set_at (Jstr.v "cellspacing") (Some (Jstr.v "0")) table;
+      El.set_inline_style (Jstr.v "border-collapse") (Jstr.v "collapse") table;
+      El.set_inline_style (Jstr.v "border-spacing") (Jstr.v "0") table;
+      let div =
+        div
+          ~at:
+            [ column_style
+            ; At.style (Jstr.v (sprintf "flex: %d%%; overflow-x: auto;" flex_pc))
+            ]
+          [ table ]
+      in
+      if scroll_to_right
+      then set_timeout ~ms:0 ~f:(fun () -> set_scroll_left div 999999.9);
+      div)
+    |> El.div ~at:[ row_style ]
+  in
+  let waves_div = div [ waves_header; waves_body ] in
   div
     [ p
         [ create_update_starting_cycle_button
