@@ -103,6 +103,10 @@ let create_zoom_button ~update_view (env : Env.t) in_or_out =
   btn
 ;;
 
+let set_scroll_left (el : El.t) (value : float) : unit =
+  Jv.set (Jv.repr el) "scrollLeft" (Jv.of_float value)
+;;
+
 let render
   ~(display_rules : Display_rules.t option)
   (waveform : Hardcaml_waveterm.Waveform.t)
@@ -124,20 +128,60 @@ let render
   in
   let views_for_waves = Lazy.force views_for_waves in
   update_view ();
-  let waves_table =
-    table
-      [ thead [ th [ txt' "Signals" ]; th [ txt' "Values" ]; th [ txt' "Waves" ] ]
-      ; tbody
-          (List.map views_for_waves ~f:(fun view ->
-             let { Wave_row.signal_column; value_column; wave_column } =
-               View_element.wave_row view
-             in
-             El.tr [ signal_column; value_column; wave_column ]))
+  let waves_div =
+    let specs =
+      let signal_width = 5 in
+      let value_width = 5 in
+      [ "Signals", Wave_row.signal_column, signal_width
+      ; "Values", Wave_row.value_column, value_width
+      ; "Waves", Wave_row.wave_column, 100 - signal_width - value_width
       ]
+    in
+    let header =
+      List.map specs ~f:(fun (column_name, _accessor, flex_pc) ->
+        div
+          ~at:
+            [ At.class' (Jstr.v "column")
+            ; At.style (Jstr.v (sprintf "flex: %d%%;" flex_pc))
+            ]
+          [ b [ txt' column_name ] ])
+      |> div ~at:[ At.class' (Jstr.v "row") ]
+    in
+    let body =
+      List.map specs ~f:(fun (_column_name, accessor, flex_pc) ->
+        let table =
+          table
+            [ tbody
+                (List.map views_for_waves ~f:(fun view ->
+                   tr
+                     ~at:
+                       [ At.style
+                           (Jstr.v
+                              (sprintf
+                                 "line-height: %fpx"
+                                 (Env.canvas_height_in_pixels env)))
+                       ]
+                     [ accessor (View_element.wave_row view) ]))
+            ]
+        in
+        El.set_at (Jstr.v "cellspacing") (Some (Jstr.v "0")) table;
+        El.set_inline_style (Jstr.v "border-collapse") (Jstr.v "collapse") table;
+        El.set_inline_style (Jstr.v "border-spacing") (Jstr.v "0") table;
+        let div =
+          div
+            ~at:
+              [ At.class' (Jstr.v "column")
+              ; At.style (Jstr.v (sprintf "flex: %d%%; overflow-x: auto;" flex_pc))
+              ]
+            [ table ]
+        in
+        (* TODO(fyquah): Run this with setTimeOut(0), but how..?) *)
+        set_scroll_left div 999999.9;
+        div)
+      |> El.div ~at:[ At.class' (Jstr.v "row") ]
+    in
+    div [ header; body ]
   in
-  El.set_at (Jstr.v "cellspacing") (Some (Jstr.v "0")) waves_table;
-  El.set_inline_style (Jstr.v "border-collapse") (Jstr.v "collapse") waves_table;
-  El.set_inline_style (Jstr.v "border-spacing") (Jstr.v "0") waves_table;
   div
     [ p
         [ create_update_starting_cycle_button
@@ -167,6 +211,7 @@ let render
         ; create_zoom_button ~update_view env `In
         ; create_zoom_button ~update_view env `Out
         ]
-    ; div [ counters_div; waves_table ]
+    ; div [ counters_div ]
+    ; waves_div
     ]
 ;;
