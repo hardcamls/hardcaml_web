@@ -1,4 +1,4 @@
-open Brr
+open! Brr
 
 type 'a t =
   { signal_column : 'a

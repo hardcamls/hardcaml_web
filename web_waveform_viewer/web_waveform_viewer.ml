@@ -175,7 +175,7 @@ let render
   in
   let waves_header =
     List.map column_specs ~f:(fun column_spec ->
-      let { Column_spec.header_name; accessor; flex_pc; scroll_to_right = _ } =
+      let { Column_spec.header_name; accessor = _; flex_pc; scroll_to_right = _ } =
         column_spec
       in
       div
@@ -185,7 +185,9 @@ let render
   in
   let waves_body =
     List.map column_specs ~f:(fun column_spec ->
-      let { Column_spec.header_name; accessor; flex_pc; scroll_to_right } = column_spec in
+      let { Column_spec.header_name = _; accessor; flex_pc; scroll_to_right } =
+        column_spec
+      in
       let table =
         table
           [ tbody
