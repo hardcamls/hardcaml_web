@@ -138,8 +138,8 @@ end
 
 let column_specs =
   let open Column_spec in
-  let signal_width = 5 in
-  let value_width = 5 in
+  let signal_width = 10 in
+  let value_width = 10 in
   [ { column_name = Signals
     ; accessor = Wave_row.signal_column
     ; flex_pc = signal_width
@@ -179,7 +179,9 @@ let render
   in
   let views_for_waves = Lazy.force views_for_waves in
   update_view ();
-  let column_style = At.style (Jstr.v "padding: 5px") in
+  let column_style =
+    At.style (Jstr.v "padding: 5px; padding-left: 10px; padding-right: 10px;")
+  in
   let row_style =
     At.style (Jstr.v "display: flex; margin-left: -5px; margin-right: -5px;")
   in
