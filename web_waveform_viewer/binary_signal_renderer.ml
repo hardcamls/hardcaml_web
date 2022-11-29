@@ -76,6 +76,17 @@ module Bit = struct
   [@@deriving fields]
 
   let redraw (t : t) =
+    let canvas_el = Canvas.to_el t.canvas in
+    Canvas.set_h t.canvas t.env.canvas_height;
+    Canvas.set_w t.canvas t.env.canvas_width;
+    El.set_inline_style
+      (Jstr.of_string "height")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels t.env)))
+      canvas_el;
+    El.set_inline_style
+      (Jstr.of_string "width")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels t.env)))
+      canvas_el;
     Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
     let env = t.env in
     let data = t.data in
@@ -114,14 +125,6 @@ module Bit = struct
   let create (env : Env.t) ~update_view ~name ~data =
     let canvas = Renderer_utils.create_wave_canvas env in
     let canvas_el = Canvas.to_el canvas in
-    El.set_inline_style
-      (Jstr.of_string "height")
-      (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels env)))
-      canvas_el;
-    El.set_inline_style
-      (Jstr.of_string "width")
-      (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
-      canvas_el;
     let signal_column =
       Renderer_utils.signal_column
         [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
@@ -157,6 +160,17 @@ module Clock = struct
   let wave_row (t : t) = t.wave_row
 
   let redraw t =
+    let canvas_el = Canvas.to_el t.canvas in
+    Canvas.set_h t.canvas t.env.canvas_height;
+    Canvas.set_w t.canvas t.env.canvas_width;
+    El.set_inline_style
+      (Jstr.of_string "height")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels t.env)))
+      canvas_el;
+    El.set_inline_style
+      (Jstr.of_string "width")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels t.env)))
+      canvas_el;
     Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
     let env = t.env in
     let canvas = t.canvas in
@@ -181,14 +195,6 @@ module Clock = struct
   let create (env : Env.t) ~update_view ~name =
     let canvas = Renderer_utils.create_wave_canvas env in
     let canvas_el = Canvas.to_el canvas in
-    El.set_inline_style
-      (Jstr.of_string "height")
-      (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels env)))
-      canvas_el;
-    El.set_inline_style
-      (Jstr.of_string "width")
-      (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
-      canvas_el;
     let signal_column =
       Renderer_utils.signal_column
         [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]

@@ -183,7 +183,7 @@ let render
         [ b [ txt' header_name ] ])
     |> div ~at:[ row_style ]
   in
-  let waves_body =
+  let columns =
     List.map column_specs ~f:(fun column_spec ->
       let { Column_spec.header_name = _; accessor; flex_pc; scroll_to_right } =
         column_spec
@@ -192,15 +192,11 @@ let render
         table
           [ tbody
               (List.map views_for_waves ~f:(fun view ->
-                 tr
-                   ~at:
-                     [ At.style
-                         (Jstr.v
-                            (sprintf
-                               "line-height: %fpx"
-                               (Env.canvas_height_in_pixels env)))
-                     ]
-                   [ accessor (View_element.wave_row view) ]))
+                 let line_height = Env.canvas_height_in_pixels env in
+                 let at =
+                   [ At.style (Jstr.v (sprintf "line-height: %fpx" line_height)) ]
+                 in
+                 tr ~at [ accessor (View_element.wave_row view) ]))
           ]
       in
       El.set_at (Jstr.v "cellspacing") (Some (Jstr.v "0")) table;
@@ -217,9 +213,13 @@ let render
       if scroll_to_right
       then set_timeout ~ms:0 ~f:(fun () -> set_scroll_left div 999999.9);
       div)
-    |> El.div ~at:[ row_style ]
   in
-  let waves_div = div [ waves_header; waves_body ] in
+  set_timeout ~ms:0 ~f:(fun () ->
+    let wave_column = List.nth_exn columns 2 in
+    let w = El.bound_w wave_column in
+    Env.set_canvas_width_in_pixels env (w -. 30.0);
+    update_view ());
+  let waves_div = div [ waves_header; El.div ~at:[ row_style ] columns ] in
   div
     [ p
         [ create_update_starting_cycle_button
