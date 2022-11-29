@@ -70,7 +70,7 @@ module Bit = struct
     { canvas : Canvas.t
     ; env : Env.t
     ; value_column : El.t
-    ; el : El.t
+    ; wave_row : Wave_row.t
     ; data : Hardcaml_waveterm.Expert.Data.t
     }
   [@@deriving fields]
@@ -133,8 +133,11 @@ module Bit = struct
     let t =
       { canvas
       ; env
-      ; el =
-          El.tr [ signal_column; value_column; Renderer_utils.wave_column [ canvas_el ] ]
+      ; wave_row =
+          { signal_column
+          ; value_column
+          ; wave_column = Renderer_utils.wave_column [ canvas_el ]
+          }
       ; value_column
       ; data
       }
@@ -146,12 +149,12 @@ end
 
 module Clock = struct
   type t =
-    { el : El.t
+    { wave_row : Wave_row.t
     ; env : Env.t
     ; canvas : Canvas.t
     }
 
-  let el (t : t) = t.el
+  let wave_row (t : t) = t.wave_row
 
   let redraw t =
     Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
@@ -194,9 +197,13 @@ module Clock = struct
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") value_column;
     Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
-    let el =
-      El.tr [ signal_column; value_column; Renderer_utils.wave_column [ canvas_el ] ]
-    in
-    { el; env; canvas }
+    { wave_row =
+        { signal_column
+        ; value_column
+        ; wave_column = Renderer_utils.wave_column [ canvas_el ]
+        }
+    ; env
+    ; canvas
+    }
   ;;
 end

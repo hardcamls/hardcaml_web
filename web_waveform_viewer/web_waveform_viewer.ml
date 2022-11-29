@@ -127,7 +127,12 @@ let render
   let waves_table =
     table
       [ thead [ th [ txt' "Signals" ]; th [ txt' "Values" ]; th [ txt' "Waves" ] ]
-      ; tbody (List.map ~f:View_element.el views_for_waves)
+      ; tbody
+          (List.map views_for_waves ~f:(fun view ->
+             let { Wave_row.signal_column; value_column; wave_column } =
+               View_element.wave_row view
+             in
+             El.tr [ signal_column; value_column; wave_column ]))
       ]
   in
   El.set_at (Jstr.v "cellspacing") (Some (Jstr.v "0")) waves_table;
