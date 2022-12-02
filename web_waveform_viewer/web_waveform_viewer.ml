@@ -178,6 +178,10 @@ let render
       (Array.to_list waves |> List.filter_map ~f:(create_view_for_wave ~update_view env))
   in
   let views_for_waves = Lazy.force views_for_waves in
+  let resize_and_redraw () =
+    List.iter views_for_waves ~f:View_element.resize;
+    update_view ()
+  in
   update_view ();
   let column_style =
     At.style (Jstr.v "padding: 5px; padding-left: 10px; padding-right: 10px;")
@@ -237,6 +241,7 @@ let render
       Option.iter wave_column ~f:(fun wave_column ->
         let w = El.bound_w wave_column in
         Env.set_canvas_width_in_pixels env (w -. 50.0);
+        resize_and_redraw ();
         update_view ())
   in
   set_timeout ~ms:0 ~f:update_canvas_width_on_resize;

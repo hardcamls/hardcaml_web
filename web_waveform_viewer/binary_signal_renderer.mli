@@ -3,6 +3,7 @@ module Clock : sig
 
   val create : Env.t -> update_view:(unit -> unit) -> name:string -> t
   val wave_row : t -> Brr.El.t Wave_row.t
+  val resize : t -> unit
   val redraw : t -> unit
 end
 
@@ -17,5 +18,6 @@ module Bit : sig
     -> t
 
   val wave_row : t -> Brr.El.t Wave_row.t
+  val resize : t -> unit
   val redraw : t -> unit
 end

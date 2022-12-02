@@ -134,7 +134,7 @@ type t =
 
 let wave_row t = t.wave_row
 
-let redraw (t : t) =
+let resize (t : t) =
   Canvas.set_h t.canvas t.env.canvas_height;
   Canvas.set_w t.canvas t.env.canvas_width;
   El.set_inline_style
@@ -144,7 +144,10 @@ let redraw (t : t) =
   El.set_inline_style
     (Jstr.of_string "width")
     (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels t.env)))
-    t.canvas_el;
+    t.canvas_el
+;;
+
+let redraw (t : t) =
   Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
   let ctx = C2d.get_context t.canvas in
   C2d.set_line_width ctx Constants.signal_line_width;

@@ -75,7 +75,7 @@ module Bit = struct
     }
   [@@deriving fields]
 
-  let redraw (t : t) =
+  let resize (t : t) =
     let canvas_el = Canvas.to_el t.canvas in
     Canvas.set_h t.canvas t.env.canvas_height;
     Canvas.set_w t.canvas t.env.canvas_width;
@@ -86,7 +86,10 @@ module Bit = struct
     El.set_inline_style
       (Jstr.of_string "width")
       (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels t.env)))
-      canvas_el;
+      canvas_el
+  ;;
+
+  let redraw (t : t) =
     Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
     let env = t.env in
     let data = t.data in
@@ -159,7 +162,7 @@ module Clock = struct
 
   let wave_row (t : t) = t.wave_row
 
-  let redraw t =
+  let resize t =
     let canvas_el = Canvas.to_el t.canvas in
     Canvas.set_h t.canvas t.env.canvas_height;
     Canvas.set_w t.canvas t.env.canvas_width;
@@ -170,7 +173,10 @@ module Clock = struct
     El.set_inline_style
       (Jstr.of_string "width")
       (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels t.env)))
-      canvas_el;
+      canvas_el
+  ;;
+
+  let redraw t =
     Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
     let env = t.env in
     let canvas = t.canvas in
