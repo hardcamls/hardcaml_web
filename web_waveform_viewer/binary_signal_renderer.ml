@@ -81,7 +81,7 @@ module Bit = struct
     let data = t.data in
     let canvas = t.canvas in
     let ctx = C2d.get_context canvas in
-    C2d.set_stroke_style ctx (C2d.color (Jstr.v "black"));
+    C2d.set_stroke_style ctx (C2d.color Constants.wave_colour);
     let value_at_selected_cycle =
       Renderer_utils.wave_data_get_opt data env.selected_cycle
     in
@@ -169,7 +169,7 @@ module Clock = struct
       Path_builder.step path_builder true;
       Path_builder.step path_builder false
     done;
-    C2d.set_stroke_style ctx (C2d.color (Jstr.v "black"));
+    C2d.set_stroke_style ctx (C2d.color Constants.wave_colour);
     C2d.set_line_width ctx Constants.signal_line_width;
     C2d.stroke ctx (Path_builder.path path_builder);
     Renderer_utils.draw_selected_cycle env canvas

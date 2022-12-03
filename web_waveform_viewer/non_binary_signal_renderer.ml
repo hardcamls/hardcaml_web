@@ -137,7 +137,8 @@ let redraw (t : t) =
   Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
   let ctx = C2d.get_context t.canvas in
   C2d.set_line_width ctx Constants.signal_line_width;
-  C2d.set_stroke_style ctx (C2d.color (Jstr.v "black"));
+  C2d.set_stroke_style ctx (C2d.color Constants.wave_colour);
+  C2d.set_fill_style ctx (C2d.color Constants.wave_colour);
   C2d.set_font
     ctx
     (Jstr.of_string (sprintf "%dpx Courier New" Constants.font_size_in_pixels));

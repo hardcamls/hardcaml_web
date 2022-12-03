@@ -30,14 +30,14 @@ module Make (Design : Design.S) = struct
     Utilization.create utilization
   ;;
 
-  let rtl parameters =
+  let rtl parameters language =
     let buffer = Buffer.create 1024 in
     let scope, circuit = circuit ~flatten_design:false ~build_mode:Synthesis parameters in
     status "Generating RTL";
     Hardcaml.Rtl.output
       ~database:(Hardcaml.Scope.circuit_database scope)
       ~output_mode:(To_buffer buffer)
-      Verilog
+      language
       circuit;
     Buffer.contents_bytes buffer
   ;;
@@ -69,9 +69,9 @@ module Make (Design : Design.S) = struct
     | exception e -> error (Exn.to_string e) parameters
   ;;
 
-  let rtl parameters =
-    match rtl parameters with
-    | rtl -> post (Messages.Worker_to_app.Rtl rtl)
+  let rtl parameters language =
+    match rtl parameters language with
+    | rtl -> post (Messages.Worker_to_app.Rtl (rtl, language))
     | exception e -> error (Exn.to_string e) parameters
   ;;
 
@@ -86,7 +86,7 @@ module Make (Design : Design.S) = struct
       let msg : Messages.App_to_worker.t = Brr_io.Message.Ev.data (Ev.as_type e) in
       match msg with
       | Utilization parameters -> utilization parameters
-      | Rtl parameters -> rtl parameters
+      | Rtl (parameters, language) -> rtl parameters language
       | Simulation parameters -> simulation parameters
     in
     if not (Brr_webworkers.Worker.ami ())

@@ -1,14 +1,36 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="UTF-8">
         <title>Hardcaml On The Web</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="preconnect" href="https://rsms.me/">
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+        <link href="style.css" rel="stylesheet">
+        <link href="textbox.css" rel="stylesheet">
+
         <script type="text/javascript" defer="defer" src="hardcaml_app.bc.js"></script>
         <meta name="description" content="Hardcaml Web Application">
+
     </head>
     <body>
-        <h1>Sorting networks</h1>
-        <p>Bitonic and odd-even merge sorting networks.</p>
-        <div id="hardcaml_app"></div>
+        <header> Sorting networks </header>
+        <aside>
+            <details open id="hardcaml_app-parameters"> </details> 
+            <details> <summary> Ports </summary> <div id="hardcaml_app-ports"></div> </details>
+            <details> <summary> Utilization </summary> <div id="hardcaml_app-utilization"></div></details>
+            <details> <summary> Download RTL </summary>
+                <div>
+                    <a href="#" id="hardcaml_app-verilog">Verilog</a> or
+                    <a href="#" id="hardcaml_app-vhdl">VHDL</a>
+                </div>
+            </details>
+        </aside>
+        <main>
+            <!-- <p>Bitonic and odd-even merge sorting networks.</p> -->
+            <div id="hardcaml_app"></div>
+        </main>
+        <footer id="hardcaml_app-status"> Copyright Jane Street - 2022 </footer>
     </body>
 </html>
