@@ -12,11 +12,11 @@
 }
 
 .growing-textbox input {
-    width:100%;
     top:0;
     left:0;
     background: #202124;
     color: white;
+    outline:none;
 }
 
 .textbox { 
@@ -25,12 +25,14 @@
 }
 
 .textbox-container {
-    background:white;
     margin: 5px 0px 2px 0px;
     border: 1px solid #717b97;
     border-radius: 2px;
 }
 
+.textbox-container {
+  width: fit-content;
+}
 
 @keyframes focus-textbox {
   from {

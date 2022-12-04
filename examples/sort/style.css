@@ -38,18 +38,18 @@ main {
     background: #202124;
     color: white;
     flex-grow: 1;
-
-    /* todo delete this */
-    display: flex;
-    color: rgba(255, 255, 255, 0.25);
-    justify-content: center;
-    align-items: center;
+    overflow:auto;
+    padding: 1em;
 }
 
 aside {
     box-shadow: 0 0 5px #3f3e3e;
     background: #292a2d;
     color: #bebebe;
+
+    max-height:75vh;
+    max-width:33vw;
+    overflow:auto;
 
     position: absolute;
     right: 0.5em;
@@ -68,9 +68,16 @@ aside button {
     cursor: pointer;
 }
 
-aside, details {
+aside {
     display: flex;
     flex-direction: column;
+    z-index:10;
+}
+
+details {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
 
 details > summary {
@@ -89,5 +96,19 @@ footer {
 }
 
 input {
-    max-width: 100px;
+    max-width: 5em;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+p {
+    margin:0;
+}
+
+.pack {
+    display: flex;
+    flex-direction: column;
 }
