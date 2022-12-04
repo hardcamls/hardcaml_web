@@ -70,10 +70,24 @@ module Bit = struct
     { canvas : Canvas.t
     ; env : Env.t
     ; value_column : El.t
-    ; el : El.t
+    ; wave_row : El.t Wave_row.t
     ; data : Hardcaml_waveterm.Expert.Data.t
     }
   [@@deriving fields]
+
+  let resize (t : t) =
+    let canvas_el = Canvas.to_el t.canvas in
+    Canvas.set_h t.canvas t.env.canvas_height;
+    Canvas.set_w t.canvas t.env.canvas_width;
+    El.set_inline_style
+      (Jstr.of_string "height")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels t.env)))
+      canvas_el;
+    El.set_inline_style
+      (Jstr.of_string "width")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels t.env)))
+      canvas_el
+  ;;
 
   let redraw (t : t) =
     Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
@@ -114,14 +128,6 @@ module Bit = struct
   let create (env : Env.t) ~update_view ~name ~data =
     let canvas = Renderer_utils.create_wave_canvas env in
     let canvas_el = Canvas.to_el canvas in
-    El.set_inline_style
-      (Jstr.of_string "height")
-      (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels env)))
-      canvas_el;
-    El.set_inline_style
-      (Jstr.of_string "width")
-      (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
-      canvas_el;
     let signal_column =
       Renderer_utils.signal_column
         [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
@@ -133,8 +139,11 @@ module Bit = struct
     let t =
       { canvas
       ; env
-      ; el =
-          El.tr [ signal_column; value_column; Renderer_utils.wave_column [ canvas_el ] ]
+      ; wave_row =
+          { signal_column
+          ; value_column
+          ; wave_column = Renderer_utils.wave_column [ canvas_el ]
+          }
       ; value_column
       ; data
       }
@@ -146,12 +155,26 @@ end
 
 module Clock = struct
   type t =
-    { el : El.t
+    { wave_row : El.t Wave_row.t
     ; env : Env.t
     ; canvas : Canvas.t
     }
 
-  let el (t : t) = t.el
+  let wave_row (t : t) = t.wave_row
+
+  let resize t =
+    let canvas_el = Canvas.to_el t.canvas in
+    Canvas.set_h t.canvas t.env.canvas_height;
+    Canvas.set_w t.canvas t.env.canvas_width;
+    El.set_inline_style
+      (Jstr.of_string "height")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels t.env)))
+      canvas_el;
+    El.set_inline_style
+      (Jstr.of_string "width")
+      (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels t.env)))
+      canvas_el
+  ;;
 
   let redraw t =
     Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
@@ -178,14 +201,6 @@ module Clock = struct
   let create (env : Env.t) ~update_view ~name =
     let canvas = Renderer_utils.create_wave_canvas env in
     let canvas_el = Canvas.to_el canvas in
-    El.set_inline_style
-      (Jstr.of_string "height")
-      (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels env)))
-      canvas_el;
-    El.set_inline_style
-      (Jstr.of_string "width")
-      (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
-      canvas_el;
     let signal_column =
       Renderer_utils.signal_column
         [ El.txt (Jstr.of_string (Bytes.to_string (Bytes.of_string name))) ]
@@ -194,9 +209,13 @@ module Clock = struct
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
     El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") value_column;
     Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
-    let el =
-      El.tr [ signal_column; value_column; Renderer_utils.wave_column [ canvas_el ] ]
-    in
-    { el; env; canvas }
+    { wave_row =
+        { signal_column
+        ; value_column
+        ; wave_column = Renderer_utils.wave_column [ canvas_el ]
+        }
+    ; env
+    ; canvas
+    }
   ;;
 end

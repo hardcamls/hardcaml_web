@@ -123,15 +123,29 @@ end
 
 type t =
   { canvas : Canvas.t
-  ; values_column : El.t
+  ; canvas_el : El.t
+  ; value_column : El.t
   ; bits_to_string : Bits.t -> string
   ; env : Env.t
-  ; el : El.t
+  ; wave_row : Brr.El.t Wave_row.t
   ; data : Hardcaml_waveterm.Expert.Data.t
   ; alignment : Text_alignment.t
   }
 
-let el t = t.el
+let wave_row t = t.wave_row
+
+let resize (t : t) =
+  Canvas.set_h t.canvas t.env.canvas_height;
+  Canvas.set_w t.canvas t.env.canvas_width;
+  El.set_inline_style
+    (Jstr.of_string "height")
+    (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels t.env)))
+    t.canvas_el;
+  El.set_inline_style
+    (Jstr.of_string "width")
+    (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels t.env)))
+    t.canvas_el
+;;
 
 let redraw (t : t) =
   Renderer_utils.clear_canvas t.env (C2d.get_context t.canvas);
@@ -163,7 +177,7 @@ let redraw (t : t) =
   Renderer.render_last_value renderer;
   Renderer_utils.draw_selected_cycle t.env t.canvas;
   El.set_children
-    t.values_column
+    t.value_column
     [ El.txt'
         (match Renderer_utils.wave_data_get_opt t.data t.env.selected_cycle with
          | None -> ""
@@ -192,27 +206,23 @@ let create
       Bits_to_string.hex
     | Bit | Bit_or _ -> (* Impossible. *) assert false
   in
-  let values_column = Renderer_utils.value_column [] in
+  let value_column = Renderer_utils.value_column [] in
   let signal_column =
     Renderer_utils.signal_column [ El.txt' (Bytes.to_string (Bytes.of_string name)) ]
   in
   El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") signal_column;
-  El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") values_column;
+  El.set_inline_style (Jstr.v "font-family") (Jstr.v "\"Courier New\"") value_column;
   let canvas_el = Canvas.to_el canvas in
-  El.set_inline_style
-    (Jstr.of_string "height")
-    (Jstr.of_string (sprintf "%fpx" (Env.canvas_height_in_pixels env)))
-    canvas_el;
-  El.set_inline_style
-    (Jstr.of_string "width")
-    (Jstr.of_string (sprintf "%fpx" (Env.canvas_width_in_pixels env)))
-    canvas_el;
   Renderer_utils.update_current_cycle_on_click ~canvas_el ~update_view ~env;
   let t =
     { canvas
-    ; values_column
-    ; el =
-        El.tr [ signal_column; values_column; Renderer_utils.wave_column [ canvas_el ] ]
+    ; canvas_el
+    ; value_column
+    ; wave_row =
+        { signal_column
+        ; value_column
+        ; wave_column = Renderer_utils.wave_column [ canvas_el ]
+        }
     ; env
     ; bits_to_string
     ; data

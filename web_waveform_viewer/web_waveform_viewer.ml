@@ -103,6 +103,61 @@ let create_zoom_button ~update_view (env : Env.t) in_or_out =
   btn
 ;;
 
+let set_scroll_left (el : El.t) (value : float) : unit =
+  Jv.set (Jv.repr el) "scrollLeft" (Jv.of_float value)
+;;
+
+let set_timeout ~ms ~f =
+  let (_ : unit Fut.t) =
+    let open Fut.Syntax in
+    let* () = Fut.tick ~ms in
+    let () = f () in
+    Fut.return ()
+  in
+  ()
+;;
+
+module Column_name = struct
+  type t =
+    | Signals
+    | Values
+    | Waves
+  [@@deriving sexp_of, equal]
+
+  let to_string x = Sexp.to_string_mach (sexp_of_t x)
+end
+
+module Column_spec = struct
+  type t =
+    { column_name : Column_name.t
+    ; accessor : Brr.El.t Wave_row.t -> Brr.El.t
+    ; flex_pc : int
+    ; scroll_to_right : bool
+    }
+end
+
+let column_specs =
+  let open Column_spec in
+  let signal_width = 10 in
+  let value_width = 10 in
+  [ { column_name = Signals
+    ; accessor = Wave_row.signal_column
+    ; flex_pc = signal_width
+    ; scroll_to_right = false
+    }
+  ; { column_name = Values
+    ; accessor = Wave_row.value_column
+    ; flex_pc = value_width
+    ; scroll_to_right = true
+    }
+  ; { column_name = Waves
+    ; accessor = Wave_row.wave_column
+    ; flex_pc = 100 - signal_width - value_width
+    ; scroll_to_right = false
+    }
+  ]
+;;
+
 let render
   ~(display_rules : Display_rules.t option)
   (waveform : Hardcaml_waveterm.Waveform.t)
@@ -123,16 +178,78 @@ let render
       (Array.to_list waves |> List.filter_map ~f:(create_view_for_wave ~update_view env))
   in
   let views_for_waves = Lazy.force views_for_waves in
-  update_view ();
-  let waves_table =
-    table
-      [ thead [ th [ txt' "Signals" ]; th [ txt' "Values" ]; th [ txt' "Waves" ] ]
-      ; tbody (List.map ~f:View_element.el views_for_waves)
-      ]
+  let resize_and_redraw () =
+    List.iter views_for_waves ~f:View_element.resize;
+    update_view ()
   in
-  El.set_at (Jstr.v "cellspacing") (Some (Jstr.v "0")) waves_table;
-  El.set_inline_style (Jstr.v "border-collapse") (Jstr.v "collapse") waves_table;
-  El.set_inline_style (Jstr.v "border-spacing") (Jstr.v "0") waves_table;
+  update_view ();
+  let column_style =
+    At.style (Jstr.v "padding: 5px; padding-left: 10px; padding-right: 10px;")
+  in
+  let row_style =
+    At.style (Jstr.v "display: flex; margin-left: -5px; margin-right: -5px;")
+  in
+  let waves_header =
+    List.map column_specs ~f:(fun column_spec ->
+      let { Column_spec.column_name; accessor = _; flex_pc; scroll_to_right = _ } =
+        column_spec
+      in
+      div
+        ~at:[ column_style; At.style (Jstr.v (sprintf "flex: %d%%;" flex_pc)) ]
+        [ b [ txt' (Column_name.to_string column_name) ] ])
+    |> div ~at:[ row_style ]
+  in
+  let columns =
+    List.map column_specs ~f:(fun column_spec ->
+      let { Column_spec.column_name = _; accessor; flex_pc; scroll_to_right } =
+        column_spec
+      in
+      let table =
+        table
+          [ tbody
+              (List.map views_for_waves ~f:(fun view ->
+                 let line_height = Env.canvas_height_in_pixels env in
+                 let at =
+                   [ At.style (Jstr.v (sprintf "line-height: %fpx" line_height)) ]
+                 in
+                 tr ~at [ accessor (View_element.wave_row view) ]))
+          ]
+      in
+      El.set_at (Jstr.v "cellspacing") (Some (Jstr.v "0")) table;
+      El.set_inline_style (Jstr.v "border-collapse") (Jstr.v "collapse") table;
+      El.set_inline_style (Jstr.v "border-spacing") (Jstr.v "0") table;
+      let div =
+        div
+          ~at:
+            [ column_style
+            ; At.style (Jstr.v (sprintf "flex: %d%%; overflow-x: auto;" flex_pc))
+            ]
+          [ table ]
+      in
+      if scroll_to_right
+      then set_timeout ~ms:0 ~f:(fun () -> set_scroll_left div 999999.9);
+      div)
+  in
+  let update_canvas_width_on_resize =
+    let wave_column =
+      let%bind.Option i, _ =
+        List.findi column_specs ~f:(fun _ c -> Column_name.equal c.column_name Waves)
+      in
+      List.nth columns i
+    in
+    fun () ->
+      Option.iter wave_column ~f:(fun wave_column ->
+        let w = El.bound_w wave_column in
+        Env.set_canvas_width_in_pixels env (w -. 50.0);
+        resize_and_redraw ();
+        update_view ())
+  in
+  set_timeout ~ms:0 ~f:update_canvas_width_on_resize;
+  Ev.listen
+    Ev.resize
+    (fun (_ : _ Ev.t) -> update_canvas_width_on_resize ())
+    (Ev.target_of_jv (Window.to_jv G.window));
+  let waves_div = div [ waves_header; El.div ~at:[ row_style ] columns ] in
   div
     [ p
         [ create_update_starting_cycle_button
@@ -162,6 +279,7 @@ let render
         ; create_zoom_button ~update_view env `In
         ; create_zoom_button ~update_view env `Out
         ]
-    ; div [ counters_div; waves_table ]
+    ; div [ counters_div ]
+    ; waves_div
     ]
 ;;

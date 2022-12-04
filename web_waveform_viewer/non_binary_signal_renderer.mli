@@ -1,6 +1,7 @@
 type t
 
-val el : t -> Brr.El.t
+val wave_row : t -> Brr.El.t Wave_row.t
+val resize : t -> unit
 val redraw : t -> unit
 
 val create

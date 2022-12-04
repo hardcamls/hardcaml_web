@@ -20,3 +20,5 @@ val update_selected_cycle : t -> int -> unit
 val update_starting_cycle_with_delta : t -> delta:int -> unit
 val update_starting_cycle_to_begin : t -> unit
 val update_starting_cycle_to_end : t -> unit
+val set_canvas_width_in_pixels : t -> float -> unit
+val set_canvas_height_in_pixels : t -> float -> unit

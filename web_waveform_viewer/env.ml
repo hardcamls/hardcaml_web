@@ -53,7 +53,8 @@ let update_zoom t in_or_out =
     | `In -> Float.of_int t.half_cycle_width *. 1.5
     | `Out -> Float.of_int t.half_cycle_width /. 1.5
   in
-  t.half_cycle_width <- Int.max 1 (Int.min (Float.to_int next_half_cycle_width) 1000)
+  t.half_cycle_width
+    <- Int.max 1 (Int.min (Float.to_int (Float.round_up next_half_cycle_width)) 1000)
 ;;
 
 let canvas_height_in_pixels env =
@@ -62,6 +63,14 @@ let canvas_height_in_pixels env =
 
 let canvas_width_in_pixels env =
   Float.of_int env.canvas_width /. Float.of_int Constants.canvas_scaling_factor
+;;
+
+let set_canvas_height_in_pixels (t : t) x =
+  t.canvas_height <- Float.to_int (x *. Float.of_int Constants.canvas_scaling_factor)
+;;
+
+let set_canvas_width_in_pixels (t : t) x =
+  t.canvas_width <- Float.to_int (x *. Float.of_int Constants.canvas_scaling_factor)
 ;;
 
 let update_selected_cycle (t : t) x =
