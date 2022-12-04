@@ -3,7 +3,11 @@ open Base
 module App_to_worker : sig
   type t =
     | Utilization of Parameters.t
-    | Rtl of Parameters.t * Hardcaml.Rtl.Language.t
+    | Rtl of
+        { parameters : Parameters.t
+        ; language : Hardcaml.Rtl.Language.t
+        ; hierarchical_rtl : bool
+        }
     | Simulation of Parameters.t
   [@@deriving sexp_of]
 end

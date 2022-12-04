@@ -26,6 +26,7 @@ module Make (Design : Design.S) = struct
       ; apply : El.t
       ; verilog : El.t
       ; vhdl : El.t
+      ; hierarchical_rtl : El.t
       }
 
     let create params =
@@ -42,6 +43,7 @@ module Make (Design : Design.S) = struct
       ; apply
       ; verilog = find_id "hardcaml_app-verilog"
       ; vhdl = find_id "hardcaml_app-vhdl"
+      ; hierarchical_rtl = find_id "hardcaml_app-hierarchical"
       }
     ;;
   end
@@ -340,20 +342,23 @@ module Make (Design : Design.S) = struct
     Control_buttons.listen_and_post worker buttons buttons.simulation (fun () ->
       Messages.App_to_worker.Simulation (parameters ()));
     Control_buttons.listen_and_post worker buttons buttons.rtl (fun () ->
-      Messages.App_to_worker.Rtl (parameters (), Verilog));
+      Messages.App_to_worker.Rtl
+        { parameters = parameters (); language = Verilog; hierarchical_rtl = true });
     Ev.listen
       Ev.click
       (fun _ ->
         Brr_webworkers.Worker.post
           worker
-          (Messages.App_to_worker.Rtl (parameters (), Verilog)))
+          (Messages.App_to_worker.Rtl
+             { parameters = parameters (); language = Verilog; hierarchical_rtl = true }))
       (El.as_target divs.verilog);
     Ev.listen
       Ev.click
       (fun _ ->
         Brr_webworkers.Worker.post
           worker
-          (Messages.App_to_worker.Rtl (parameters (), Vhdl)))
+          (Messages.App_to_worker.Rtl
+             { parameters = parameters (); language = Vhdl; hierarchical_rtl = true }))
       (El.as_target divs.vhdl);
     Ev.listen Ev.click (on_apply worker divs parameters) (El.as_target divs.apply);
     El.set_children div_app [ divs.simulation ];
