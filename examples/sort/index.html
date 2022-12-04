@@ -21,33 +21,37 @@
     <body>
         <header> Sorting networks </header>
         <aside>
-            <details open>
-                <div class="wrap" id="hardcaml_app-parameters">
+                <details open>
+                    <summary> Parameters </summary>
+                    <!-- pack for veritical alignment, wrap to horizontal -->
+                    <div class="wrap" id="hardcaml_app-parameters">
+                    </div>
+                </details>
+            <details> <summary> Download RTL </summary>
+                <div class="wrap">
+                    <a href="#" id="hardcaml_app-verilog">Verilog</a> or
+                    <a href="#" id="hardcaml_app-vhdl">VHDL</a>
+                    <label><input type="checkbox" checked="true" id="hardcaml_app-hierarchical">
+                    </input>Hierarchical</label>
                 </div>
             </details>
             <details> <summary> Ports </summary> <div id="hardcaml_app-ports"></div> </details>
             <details> <summary> Utilization </summary> <div id="hardcaml_app-utilization"></div></details>
-            <details> <summary> Download RTL </summary>
-                <div>
-                    <a href="#" id="hardcaml_app-verilog">Verilog</a> or
-                    <a href="#" id="hardcaml_app-vhdl">VHDL</a>
-                </div>
-            </details>
         </aside>
         <main>
             <h1>Bitonic and odd-even merge sorting networks.</h1>
             <p>
-                <!-- Demonstrate a nicer set of icons for the web waveform ->
-                <button> <span class="material-icons small">first_page</span> </button>
-                <button> <span class="material-icons small">arrow_back_ios</span> </button>
-                <button> <span class="material-icons small">chevron_left</span> </button>
-                <input class="textbox" value="0"/>
-                <button> <span class="material-icons small">chevron_right</span> </button>
-                <button> <span class="material-icons small">arrow_forward_ios</span> </button>
-                <button> <span class="material-icons small">last_page</span> </button>
-                <button> <span class="material-icons small">zoom_in</span> </button>
-                <button> <span class="material-icons small">zoom_out_map</span> </button>
-                <button> <span class="material-icons small">zoom_out</span> </button>
+                <!-- Demonstrate a nicer set of icons for the web waveform -->
+                <!-- <button> <span class="material-icons small">first_page</span> </button>
+                     <button> <span class="material-icons small">arrow_back_ios</span> </button>
+                     <button> <span class="material-icons small">chevron_left</span> </button>
+                     <input class="textbox" value="0"></input>
+                     <button> <span class="material-icons small">chevron_right</span> </button>
+                     <button> <span class="material-icons small">arrow_forward_ios</span> </button>
+                     <button> <span class="material-icons small">last_page</span> </button>
+                     <button> <span class="material-icons small">zoom_in</span> </button>
+                     <button> <span class="material-icons small">zoom_out_map</span> </button>
+                     <button> <span class="material-icons small">zoom_out</span> </button> -->
             </p>
             <div id="hardcaml_app"></div>
         </main>

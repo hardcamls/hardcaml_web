@@ -8,7 +8,7 @@ let top_level_name = "sorting_network"
 let default_parameters =
   Parameter.
     [ "data_width", { typ = Int 8; description = "data width" }
-    ; "size", { typ = Int 4; description = "network size" }
+    ; "log_size", { typ = Int 2; description = "log network size" }
     ; ( "type"
       , { typ = Typ.of_enum (module Hardcaml_circuits.Sorting_network.Config) ~value:0
         ; description = "network type"
@@ -18,7 +18,8 @@ let default_parameters =
 
 module Make (P : Parameters.S) = struct
   let data_width = Parameters.as_int_exn P.parameters "data_width"
-  let size = Parameters.as_int_exn P.parameters "size"
+  let log_size = Parameters.as_int_exn P.parameters "log_size"
+  let size = 1 lsl max 1 log_size
 
   let network_type =
     let n = Parameters.as_symbol_exn P.parameters "type" in

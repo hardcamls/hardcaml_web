@@ -8,6 +8,12 @@ module Make (Design : Design.S) = struct
     At.v (Jstr.v "style") (Jstr.v ("background:#" ^ Printf.sprintf "%.6x" colour))
   ;;
 
+  let find_id id =
+    match Document.find_el_by_id G.document (Jstr.v id) with
+    | None -> raise_s [%message "Hardcaml application div was not found" (id : string)]
+    | Some el -> el
+  ;;
+
   module App_divs = struct
     type t =
       { parameters : El.t
@@ -22,28 +28,20 @@ module Make (Design : Design.S) = struct
       ; vhdl : El.t
       }
 
-    let find div =
-      match Document.find_el_by_id G.document (Jstr.v div) with
-      | None -> raise_s [%message "Hardcaml application div was not found" (div : string)]
-      | Some div_app -> div_app
-    ;;
-
     let create params =
-      let parameters = find "hardcaml_app-parameters" in
+      let parameters = find_id "hardcaml_app-parameters" in
       let apply = El.button [ El.txt' "Apply" ] in
-      El.set_children
-        parameters
-        (List.concat [ [ El.summary [ El.txt' "Parameters" ] ]; params; [ apply ] ]);
+      El.set_children parameters (List.concat [ params; [ apply ] ]);
       { parameters
       ; control = El.div []
-      ; status = find "hardcaml_app-status"
-      ; utilization = find "hardcaml_app-utilization"
-      ; ports = find "hardcaml_app-ports"
+      ; status = find_id "hardcaml_app-status"
+      ; utilization = find_id "hardcaml_app-utilization"
+      ; ports = find_id "hardcaml_app-ports"
       ; simulation = El.div []
       ; rtl = El.div []
       ; apply
-      ; verilog = find "hardcaml_app-verilog"
-      ; vhdl = find "hardcaml_app-vhdl"
+      ; verilog = find_id "hardcaml_app-verilog"
+      ; vhdl = find_id "hardcaml_app-vhdl"
       }
     ;;
   end
@@ -200,19 +198,12 @@ module Make (Design : Design.S) = struct
     in
     let inputs = List.map (D.I.to_list D.I.t) ~f:port in
     let outputs = List.map (D.O.to_list D.O.t) ~f:port in
-    let table =
+    let table dirn ports =
       let span2 = At.v (Jstr.v "colspan") (Jstr.of_int 2) in
       El.table
-        ([ [ El.tr [ El.th ~at:[ span2 ] [ El.txt' "inputs" ] ] ]
-         ; [ El.tr [ El.th [ El.txt' "name" ]; El.th [ El.txt' "width" ] ] ]
-         ; inputs
-         ; [ El.tr [ El.th ~at:[ span2 ] [ El.txt' "outputs" ] ] ]
-         ; [ El.tr [ El.th [ El.txt' "name" ]; El.th [ El.txt' "width" ] ] ]
-         ; outputs
-         ]
-        |> List.concat)
+        ([ [ El.tr [ El.th ~at:[ span2 ] [ El.txt' dirn ] ] ]; ports ] |> List.concat)
     in
-    El.set_children div [ table ]
+    El.set_children div [ table "inputs" inputs; table "outputs" outputs ]
   ;;
 
   let table_of_utilization div (u : Utilization.t) =
@@ -379,11 +370,7 @@ module Make (Design : Design.S) = struct
     else
       let* _ = Ev.next Ev.load (Window.as_target G.window) in
       (* Start running the js code *)
-      let div_app =
-        match Document.find_el_by_id G.document (Jstr.v div) with
-        | None -> raise_s [%message "Hardcaml application div was not found"]
-        | Some div_app -> div_app
-      in
+      let div_app = find_id div in
       let worker =
         try Brr_webworkers.Worker.create (Jstr.v javascript) with
         | exn -> raise_s [%message "Failed to create webworker." (exn : exn)]
