@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Hardcaml On The Web</title>
+        <title>{{ page.title }}</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <link rel="preconnect" href="https://rsms.me/">
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-        <link href="style.css" rel="stylesheet">
-        <link href="textbox.css" rel="stylesheet">
+        <link href="/css/style.css" rel="stylesheet">
+        <link href="/css/textbox.css" rel="stylesheet">
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
@@ -19,7 +19,7 @@
         </style>
     </head>
     <body>
-        <header> Sorting networks </header>
+        <header> {{page.title}} </header>
         <aside>
                 <details open>
                     <summary> Parameters </summary>
@@ -39,8 +39,10 @@
             <details> <summary> Utilization </summary> <div id="hardcaml_app-utilization"></div></details>
         </aside>
         <main>
-            <h1>Bitonic and odd-even merge sorting networks.</h1>
-            <p>
+            <details open>
+                <summary></summary>
+                {{ content }}
+            </details>
                 <!-- Demonstrate a nicer set of icons for the web waveform -->
                 <!-- <button> <span class="material-icons small">first_page</span> </button>
                      <button> <span class="material-icons small">arrow_back_ios</span> </button>
@@ -52,7 +54,6 @@
                      <button> <span class="material-icons small">zoom_in</span> </button>
                      <button> <span class="material-icons small">zoom_out_map</span> </button>
                      <button> <span class="material-icons small">zoom_out</span> </button> -->
-            </p>
             <div id="hardcaml_app"></div>
         </main>
         <footer id="hardcaml_app-status"> Copyright Jane Street - 2022 </footer>

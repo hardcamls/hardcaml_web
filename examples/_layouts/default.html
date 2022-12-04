@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>{{ page.title }}</title>
+
+	  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=UnifrakturMaguntia">
+    <link rel="stylesheet" href="/assets/jqmath-0.4.3.min.css">
+    <script src="/assets/jqmath-vanilla.min.js"></script>
+    {% if page.hardcaml_app %}
+    <script type="text/javascript" defer="defer" src="{{ page.hardcaml_app }}"></script>
+    {% endif %}
+  </head>
+  <body>
+    {{ content }}
+  </body>
+</html>

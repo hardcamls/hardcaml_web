@@ -112,3 +112,28 @@ p {
     display: flex;
     flex-direction: column;
 }
+
+main>details>summary {
+    font-size:1.1em;
+
+    background: #161719;
+    margin: -0.5em;
+    margin-bottom: 0;
+    padding-left: 0.25em;
+    border-bottom: 1px solid #717b9790;
+}
+
+main>details {
+    max-width: 60vw;
+    margin-bottom: 2em;
+    padding: 0.5em;
+
+    background: #292a2d;
+    color: #bebebe;
+
+    max-height:50vh;
+    overflow-y:auto;
+    border-radius: 5px;
+    border: 1px solid #717b97;
+}
+

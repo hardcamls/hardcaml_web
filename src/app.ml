@@ -132,7 +132,8 @@ module Make (Design : Design.S) = struct
     let e = El.input () in
     El.set_at (Jstr.v "type") (Some (Jstr.v "checkbox")) e;
     El.set_prop El.Prop.checked (Parameter.flag_exn default) e;
-    e, fun () -> { default with typ = Flag (El.prop El.Prop.checked e) }
+    let l = El.label [ e ] in
+    l, fun () -> { default with typ = Flag (El.prop El.Prop.checked e) }
   ;;
 
   let flag_input default = wrap default flag_input
