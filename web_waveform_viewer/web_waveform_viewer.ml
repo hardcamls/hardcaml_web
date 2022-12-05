@@ -85,6 +85,40 @@ let create_update_starting_cycle_button ~update_view (env : Env.t) ~action =
   btn
 ;;
 
+let blur_el el = ignore (Jv.call (El.to_jv el) "blur" [||] : Jv.t)
+
+let create_current_cycle_textfield ~update_view (env : Env.t) =
+  let textfield =
+    El.input ~at:[ At.class' (Jstr.v "textbox"); At.value (Jstr.v "0") ] ()
+  in
+  Ev.listen
+    Ev.blur
+    (fun (ev : _ Ev.t) ->
+      Ev.prevent_default ev;
+      let selected_cycle =
+        try
+          El.prop El.Prop.value textfield |> Jstr.to_string |> Int.of_string |> Some
+        with
+        | _ -> None
+      in
+      Option.iter
+        selected_cycle
+        ~f:(Env.update_selected_cycle_and_scroll_so_that_visible env);
+      update_view ())
+    (Ev.target_of_jv (El.to_jv textfield));
+  Ev.listen
+    Ev.keyup
+    (fun (ev : _ Ev.t) ->
+      (* When the user hits the enter button, blur, simulate as if the user
+         cliked away
+      *)
+      Ev.prevent_default ev;
+      if String.equal "Enter" (Jstr.to_string (Ev.Keyboard.key (Ev.as_type ev)))
+      then blur_el textfield)
+    (Ev.target_of_jv (El.to_jv textfield));
+  textfield
+;;
+
 let create_zoom_button ~update_view (env : Env.t) in_or_out =
   let btn =
     let open El in
@@ -163,12 +197,19 @@ let render
   let open El in
   let env = Env.create waveform in
   let waves = Waveform.sort_ports_and_formats waveform display_rules in
-  let rec update_view () = List.iter (Lazy.force views_for_waves) ~f:View_element.redraw
+  let rec update_view () =
+    El.set_prop
+      Prop.value
+      (Jstr.v (Int.to_string env.selected_cycle))
+      (Lazy.force selected_cycle_textfield);
+    List.iter (Lazy.force views_for_waves) ~f:View_element.redraw
+  and selected_cycle_textfield = lazy (create_current_cycle_textfield ~update_view env)
   and views_for_waves =
     lazy
       (Array.to_list waves |> List.filter_map ~f:(create_view_for_wave ~update_view env))
   in
   let views_for_waves = Lazy.force views_for_waves in
+  let selected_cycle_textfield = Lazy.force selected_cycle_textfield in
   let resize_and_redraw () =
     List.iter views_for_waves ~f:View_element.resize;
     update_view ()
@@ -250,6 +291,7 @@ let render
             env
             ~action:(Delta { icon = Icons.backwards_normal (); delta = Fn.const (-1) })
             ~update_view
+        ; selected_cycle_textfield
         ; create_update_starting_cycle_button
             env
             ~action:(Delta { icon = Icons.forwards_normal (); delta = Fn.const 1 })

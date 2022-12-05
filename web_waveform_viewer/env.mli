@@ -23,3 +23,4 @@ val update_starting_cycle_to_begin : t -> unit
 val update_starting_cycle_to_end : t -> unit
 val set_canvas_width_in_pixels : t -> float -> unit
 val set_canvas_height_in_pixels : t -> float -> unit
+val update_selected_cycle_and_scroll_so_that_visible : t -> int -> unit
