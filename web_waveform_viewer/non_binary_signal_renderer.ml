@@ -43,34 +43,32 @@ module Renderer = struct
     ~bits_to_string
     ~(alignment : Text_alignment.t)
     =
-    let can_fit x =
-      let text_metric = C2d.measure_text ctx (Jstr.of_string x) in
-      let width = C2d.Text_metrics.width text_metric in
-      Float.O.(width <= Float.of_int max_width_allowed)
-    in
     With_return.with_return (fun { return } ->
       let value = bits_to_string value in
-      (* If the original text as it is works, then return it. *)
-      if can_fit value then return (Some value);
-      (* Otherwise, keep stripping a character and add some dots at the end until it fits. *)
-      let rec loop text : unit =
-        match text with
-        | "" -> ()
-        | _ ->
-          let candidate =
-            match alignment with
-            | Left -> text ^ ".."
-            | Right -> ".." ^ text
-          in
-          if can_fit candidate then return (Some candidate);
-          loop
-            (match alignment with
-             | Left -> String.subo ~len:(String.length text - 1) text
-             | Right -> String.subo ~pos:1 text)
+      let number_of_characters_that_can_fit =
+        let font_width_in_pixels = 0.60 *. Float.of_int Constants.font_size_in_pixels in
+        let max_width_allowed = Float.of_int max_width_allowed in
+        Float.to_int (max_width_allowed /. font_width_in_pixels)
       in
-      loop value;
-      (* If nothing fits, try a dot. *)
-      if can_fit "." then Some "." else None)
+      if String.length value <= number_of_characters_that_can_fit
+      then Some value
+      else if number_of_characters_that_can_fit <= 0
+      then None
+      else if number_of_characters_that_can_fit <= 1
+      then Some "."
+      else if number_of_characters_that_can_fit <= 2
+      then Some ".."
+      else (
+        let num_chars_to_strip =
+          String.length value - (number_of_characters_that_can_fit - 2)
+          |> Int.max 0
+          |> Int.min (String.length value)
+        in
+        Some
+          (match alignment with
+           | Left ->
+             String.subo ~len:(String.length value - num_chars_to_strip) value ^ ".."
+           | Right -> ".." ^ String.subo ~pos:num_chars_to_strip value)))
   ;;
 
   let render_last_value t =
