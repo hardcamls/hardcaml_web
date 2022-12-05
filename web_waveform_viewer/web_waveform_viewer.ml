@@ -163,14 +163,7 @@ let render
   let open El in
   let env = Env.create waveform in
   let waves = Waveform.sort_ports_and_formats waveform display_rules in
-  let counters_div = div [] in
-  let rec update_view () =
-    El.set_children
-      counters_div
-      [ p [ txt' (sprintf "Current cycle = %d" env.starting_cycle) ]
-      ; p [ txt' (sprintf "Selected cycle = %d" env.selected_cycle) ]
-      ];
-    List.iter (Lazy.force views_for_waves) ~f:View_element.redraw
+  let rec update_view () = List.iter (Lazy.force views_for_waves) ~f:View_element.redraw
   and views_for_waves =
     lazy
       (Array.to_list waves |> List.filter_map ~f:(create_view_for_wave ~update_view env))
@@ -267,7 +260,6 @@ let render
         ; create_zoom_button ~update_view env `In
         ; create_zoom_button ~update_view env `Out
         ]
-    ; div [ counters_div ]
     ; waves_div
     ]
 ;;
