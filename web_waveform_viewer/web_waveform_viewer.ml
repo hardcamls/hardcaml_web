@@ -123,8 +123,6 @@ module Column_name = struct
     | Values
     | Waves
   [@@deriving sexp_of, equal]
-
-  let to_string x = Sexp.to_string_mach (sexp_of_t x)
 end
 
 module Column_spec = struct
@@ -189,16 +187,6 @@ let render
   let row_style =
     At.style (Jstr.v "display: flex; margin-left: -5px; margin-right: -5px;")
   in
-  let waves_header =
-    List.map column_specs ~f:(fun column_spec ->
-      let { Column_spec.column_name; accessor = _; flex_pc; scroll_to_right = _ } =
-        column_spec
-      in
-      div
-        ~at:[ column_style; At.style (Jstr.v (sprintf "flex: %d%%;" flex_pc)) ]
-        [ b [ txt' (Column_name.to_string column_name) ] ])
-    |> div ~at:[ row_style ]
-  in
   let columns =
     List.map column_specs ~f:(fun column_spec ->
       let { Column_spec.column_name = _; accessor; flex_pc; scroll_to_right } =
@@ -249,7 +237,7 @@ let render
     Ev.resize
     (fun (_ : _ Ev.t) -> update_canvas_width_on_resize ())
     (Ev.target_of_jv (Window.to_jv G.window));
-  let waves_div = div [ waves_header; El.div ~at:[ row_style ] columns ] in
+  let waves_div = div [ El.div ~at:[ row_style ] columns ] in
   div
     [ p
         [ create_update_starting_cycle_button
