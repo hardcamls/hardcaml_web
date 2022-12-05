@@ -190,9 +190,7 @@ let render
           [ tbody
               (List.map views_for_waves ~f:(fun view ->
                  let line_height = Env.canvas_height_in_pixels env in
-                 let at =
-                   [ At.style (Jstr.v (sprintf "line-height: %fpx" line_height)) ]
-                 in
+                 let at = [ At.style (Jstr.v (sprintf "height: %fpx" line_height)) ] in
                  tr ~at [ accessor (View_element.wave_row view) ]))
           ]
       in
