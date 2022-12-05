@@ -77,15 +77,15 @@ let update_selected_cycle (t : t) x =
   t.selected_cycle <- Int.max 0 (Int.min x (t.num_cycles_in_waveform - 1))
 ;;
 
-let clip_cycle t x = Int.max 0 (Int.min x (t.num_cycles_in_waveform - 1))
+let max_starting_cycle t =
+  Int.max 0 (t.num_cycles_in_waveform - num_cycles_that_can_fit_in_canvas t)
+;;
+
+let clip_starting_cycle t x = Int.max 0 (Int.min x (max_starting_cycle t))
 
 let update_starting_cycle_with_delta (t : t) ~delta =
-  t.starting_cycle <- clip_cycle t (t.starting_cycle + delta)
+  t.starting_cycle <- clip_starting_cycle t (t.starting_cycle + delta)
 ;;
 
 let update_starting_cycle_to_begin (t : t) = t.starting_cycle <- 0
-
-let update_starting_cycle_to_end (t : t) =
-  t.starting_cycle
-    <- clip_cycle t (t.num_cycles_in_waveform - num_cycles_that_can_fit_in_canvas t)
-;;
+let update_starting_cycle_to_end (t : t) = t.starting_cycle <- max_starting_cycle t
