@@ -134,11 +134,12 @@ module Make (Design : Design.S) = struct
     let e = El.input () in
     El.set_at (Jstr.v "type") (Some (Jstr.v "checkbox")) e;
     El.set_prop El.Prop.checked (Parameter.flag_exn default) e;
-    let l = El.label [ e ] in
+    let l = El.label [ e; El.txt' default.description ] in
+    El.set_inline_style (Jstr.v "white-space") (Jstr.v "pre") l;
     l, fun () -> { default with typ = Flag (El.prop El.Prop.checked e) }
   ;;
 
-  let flag_input default = wrap default flag_input
+  (* let flag_input default = wrap default flag_input *)
 
   let symbol_input (default : Parameter.t) =
     let p = Parameter.symbol_exn default in
