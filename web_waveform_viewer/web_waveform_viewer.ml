@@ -55,21 +55,21 @@ let rec create_view_for_wave
 module Update_starting_cycle_action = struct
   type t =
     | Delta of
-        { icon : string
+        { icon : El.t
         ; delta : int
         }
-    | Fast_forward of string
-    | Fast_backward of string
+    | Fast_forward of El.t
+    | Fast_backward of El.t
 end
 
 let create_update_starting_cycle_button ~update_view (env : Env.t) ~action =
   let btn =
     let open El in
     button
-      [ txt'
-          (match action with
-           | Update_starting_cycle_action.Delta { icon; delta = _ } -> icon
-           | Fast_forward icon | Fast_backward icon -> icon)
+      [ (match action with
+         | Update_starting_cycle_action.Delta { icon; delta = _ }
+         | Fast_forward icon
+         | Fast_backward icon -> icon)
       ]
   in
   Ev.listen
@@ -88,10 +88,9 @@ let create_zoom_button ~update_view (env : Env.t) in_or_out =
   let btn =
     let open El in
     button
-      [ txt'
-          (match in_or_out with
-           | `In -> "Zoom In"
-           | `Out -> "Zoom Out")
+      [ (match in_or_out with
+         | `In -> Icons.zoom_in ()
+         | `Out -> Icons.zoom_out ())
       ]
   in
   Ev.listen
@@ -233,27 +232,27 @@ let render
     [ p
         [ create_update_starting_cycle_button
             env
-            ~action:(Fast_backward "|<<")
+            ~action:(Fast_backward (Icons.to_beginning_of_simulation ()))
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = "<<"; delta = -10 })
+            ~action:(Delta { icon = Icons.backwards_fast (); delta = -10 })
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = "<"; delta = -1 })
+            ~action:(Delta { icon = Icons.backwards_normal (); delta = -1 })
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = ">"; delta = 1 })
+            ~action:(Delta { icon = Icons.forwards_normal (); delta = 1 })
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = ">>"; delta = 10 })
+            ~action:(Delta { icon = Icons.forwards_fast (); delta = 10 })
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Fast_forward ">>|")
+            ~action:(Fast_forward (Icons.to_end_of_simulation ()))
             ~update_view
         ; create_zoom_button ~update_view env `In
         ; create_zoom_button ~update_view env `Out
