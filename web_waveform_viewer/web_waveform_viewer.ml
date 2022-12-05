@@ -56,7 +56,7 @@ module Update_starting_cycle_action = struct
   type t =
     | Delta of
         { icon : El.t
-        ; delta : int
+        ; delta : Env.t -> int
         }
     | Fast_forward of El.t
     | Fast_backward of El.t
@@ -76,7 +76,8 @@ let create_update_starting_cycle_button ~update_view (env : Env.t) ~action =
     Ev.click
     (fun (_ : Ev.Mouse.t Ev.t) ->
       (match action with
-       | Delta { icon = _; delta } -> Env.update_starting_cycle_with_delta env ~delta
+       | Delta { icon = _; delta } ->
+         Env.update_starting_cycle_with_delta env ~delta:(delta env)
        | Fast_forward _ -> Env.update_starting_cycle_to_end env
        | Fast_backward _ -> Env.update_starting_cycle_to_begin env);
       update_view ())
@@ -228,6 +229,9 @@ let render
     (fun (_ : _ Ev.t) -> update_canvas_width_on_resize ())
     (Ev.target_of_jv (Window.to_jv G.window));
   let waves_div = div [ El.div ~at:[ row_style ] columns ] in
+  let delta_half_a_page env =
+    Int.max 1 ((Env.num_cycles_that_can_fit_in_canvas env + 1) / 2)
+  in
   div
     [ p
         [ create_update_starting_cycle_button
@@ -236,19 +240,23 @@ let render
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = Icons.backwards_fast (); delta = -10 })
+            ~action:
+              (Delta
+                 { icon = Icons.backwards_fast ()
+                 ; delta = Fn.compose Int.neg delta_half_a_page
+                 })
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = Icons.backwards_normal (); delta = -1 })
+            ~action:(Delta { icon = Icons.backwards_normal (); delta = Fn.const (-1) })
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = Icons.forwards_normal (); delta = 1 })
+            ~action:(Delta { icon = Icons.forwards_normal (); delta = Fn.const 1 })
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = Icons.forwards_fast (); delta = 10 })
+            ~action:(Delta { icon = Icons.forwards_fast (); delta = delta_half_a_page })
             ~update_view
         ; create_update_starting_cycle_button
             env

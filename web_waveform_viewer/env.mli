@@ -12,6 +12,7 @@ type t =
 [@@deriving fields]
 
 val create : Hardcaml_waveterm.Waveform.t -> t
+val num_cycles_that_can_fit_in_canvas : t -> int
 val num_cycles_to_render : t -> int
 val update_zoom : t -> [ `In | `Out ] -> unit
 val canvas_height_in_pixels : t -> float
