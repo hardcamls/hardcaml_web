@@ -14,4 +14,4 @@ let y_offset_to_start_of_binary_signal =
   +. Float.of_int ((initial_value_box_height - initial_binary_signal_height) / 2)
 ;;
 
-let wave_colour = Jstr.v "green"
+let wave_colour = Jstr.v "lime"
