@@ -1,0 +1,36 @@
+kramdown:
+  math_engine: null
+
+exclude:
+  - cordic/dune
+  - cordic/*.ml
+  - cordic/.#*
+  - cordic/*.bc-for-jsoo
+  - fir/dune
+  - fir/*.ml
+  - fir/.#*
+  - fir/*.bc-for-jsoo
+  - lfsr/dune
+  - lfsr/*.ml
+  - lfsr/.#*
+  - lfsr/*.bc-for-jsoo
+  - mult/dune
+  - mult/*.ml
+  - mult/.#*
+  - mult/*.bc-for-jsoo
+  - prefix/dune
+  - prefix/*.ml
+  - prefix/.#*
+  - prefix/*.bc-for-jsoo
+  - rac/dune
+  - rac/*.ml
+  - rac/.#*
+  - rac/*.bc-for-jsoo
+  - reedsolomon/dune
+  - reedsolomon/*.ml
+  - reedsolomon/.#*
+  - reedsolomon/*.bc-for-jsoo
+  - sort/dune
+  - sort/*.ml
+  - sort/.#*
+  - sort/*.bc-for-jsoo

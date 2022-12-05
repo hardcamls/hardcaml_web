@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ page.title }}</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="preconnect" href="https://rsms.me/">
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+        <link href="/css/style.css" rel="stylesheet">
+        <link href="/css/textbox.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=UnifrakturMaguntia">
+        <link rel="stylesheet" href="/jqmath/jqmath-0.4.3.min.css">
+        <script src="/jqmath/jqmath-vanilla.min.js"></script>
+
+        <script type="text/javascript" defer="defer" src="hardcaml_app.bc.js"></script>
+        <meta name="description" content="Hardcaml Web Application">
+        <style>
+         .material-icons.small { font-size: 16px; }
+        </style>
+    </head>
+    <body>
+        <header> {{page.title}} </header>
+        <aside>
+                <details open>
+                    <summary> Parameters </summary>
+                    <!-- pack for veritical alignment, wrap to horizontal -->
+                    <div class="wrap" id="hardcaml_app-parameters">
+                    </div>
+                </details>
+            <details> <summary> Download RTL </summary>
+                <div class="wrap">
+                    <a href="#" id="hardcaml_app-verilog">Verilog</a> or
+                    <a href="#" id="hardcaml_app-vhdl">VHDL</a>
+                    <label><input type="checkbox" checked="true" id="hardcaml_app-hierarchical">
+                    </input>Hierarchical</label>
+                </div>
+            </details>
+            <details> <summary> Ports </summary> <div id="hardcaml_app-ports"></div> </details>
+            <details> <summary> Utilization </summary> <div id="hardcaml_app-utilization"></div></details>
+        </aside>
+        <main>
+            <details open>
+                <summary></summary>
+                {{ content }}
+            </details>
+                <!-- Demonstrate a nicer set of icons for the web waveform -->
+                <!-- <button> <span class="material-icons small">first_page</span> </button>
+                     <button> <span class="material-icons small">arrow_back_ios</span> </button>
+                     <button> <span class="material-icons small">chevron_left</span> </button>
+                     <input class="textbox" value="0"></input>
+                     <button> <span class="material-icons small">chevron_right</span> </button>
+                     <button> <span class="material-icons small">arrow_forward_ios</span> </button>
+                     <button> <span class="material-icons small">last_page</span> </button>
+                     <button> <span class="material-icons small">zoom_in</span> </button>
+                     <button> <span class="material-icons small">zoom_out_map</span> </button>
+                     <button> <span class="material-icons small">zoom_out</span> </button> -->
+            <div id="hardcaml_app"></div>
+        </main>
+        <footer id="hardcaml_app-status"> Copyright Jane Street - 2022 </footer>
+    </body>
+</html>

@@ -55,28 +55,29 @@ let rec create_view_for_wave
 module Update_starting_cycle_action = struct
   type t =
     | Delta of
-        { icon : string
-        ; delta : int
+        { icon : El.t
+        ; delta : Env.t -> int
         }
-    | Fast_forward of string
-    | Fast_backward of string
+    | Fast_forward of El.t
+    | Fast_backward of El.t
 end
 
 let create_update_starting_cycle_button ~update_view (env : Env.t) ~action =
   let btn =
     let open El in
     button
-      [ txt'
-          (match action with
-           | Update_starting_cycle_action.Delta { icon; delta = _ } -> icon
-           | Fast_forward icon | Fast_backward icon -> icon)
+      [ (match action with
+         | Update_starting_cycle_action.Delta { icon; delta = _ }
+         | Fast_forward icon
+         | Fast_backward icon -> icon)
       ]
   in
   Ev.listen
     Ev.click
     (fun (_ : Ev.Mouse.t Ev.t) ->
       (match action with
-       | Delta { icon = _; delta } -> Env.update_starting_cycle_with_delta env ~delta
+       | Delta { icon = _; delta } ->
+         Env.update_starting_cycle_with_delta env ~delta:(delta env)
        | Fast_forward _ -> Env.update_starting_cycle_to_end env
        | Fast_backward _ -> Env.update_starting_cycle_to_begin env);
       update_view ())
@@ -84,14 +85,47 @@ let create_update_starting_cycle_button ~update_view (env : Env.t) ~action =
   btn
 ;;
 
+let blur_el el = ignore (Jv.call (El.to_jv el) "blur" [||] : Jv.t)
+
+let create_current_cycle_textfield ~update_view (env : Env.t) =
+  let textfield =
+    El.input ~at:[ At.class' (Jstr.v "textbox"); At.value (Jstr.v "0") ] ()
+  in
+  Ev.listen
+    Ev.blur
+    (fun (ev : _ Ev.t) ->
+      Ev.prevent_default ev;
+      let selected_cycle =
+        try
+          El.prop El.Prop.value textfield |> Jstr.to_string |> Int.of_string |> Some
+        with
+        | _ -> None
+      in
+      Option.iter
+        selected_cycle
+        ~f:(Env.update_selected_cycle_and_scroll_so_that_visible env);
+      update_view ())
+    (Ev.target_of_jv (El.to_jv textfield));
+  Ev.listen
+    Ev.keyup
+    (fun (ev : _ Ev.t) ->
+      (* When the user hits the enter button, blur, simulate as if the user
+         cliked away
+      *)
+      Ev.prevent_default ev;
+      if String.equal "Enter" (Jstr.to_string (Ev.Keyboard.key (Ev.as_type ev)))
+      then blur_el textfield)
+    (Ev.target_of_jv (El.to_jv textfield));
+  textfield
+;;
+
 let create_zoom_button ~update_view (env : Env.t) in_or_out =
   let btn =
     let open El in
     button
-      [ txt'
-          (match in_or_out with
-           | `In -> "Zoom In"
-           | `Out -> "Zoom Out")
+      [ (match in_or_out with
+         | `In -> Icons.zoom_in ()
+         | `Out -> Icons.zoom_out ())
       ]
   in
   Ev.listen
@@ -123,8 +157,6 @@ module Column_name = struct
     | Values
     | Waves
   [@@deriving sexp_of, equal]
-
-  let to_string x = Sexp.to_string_mach (sexp_of_t x)
 end
 
 module Column_spec = struct
@@ -165,19 +197,19 @@ let render
   let open El in
   let env = Env.create waveform in
   let waves = Waveform.sort_ports_and_formats waveform display_rules in
-  let counters_div = div [] in
   let rec update_view () =
-    El.set_children
-      counters_div
-      [ p [ txt' (sprintf "Current cycle = %d" env.starting_cycle) ]
-      ; p [ txt' (sprintf "Selected cycle = %d" env.selected_cycle) ]
-      ];
+    El.set_prop
+      Prop.value
+      (Jstr.v (Int.to_string env.selected_cycle))
+      (Lazy.force selected_cycle_textfield);
     List.iter (Lazy.force views_for_waves) ~f:View_element.redraw
+  and selected_cycle_textfield = lazy (create_current_cycle_textfield ~update_view env)
   and views_for_waves =
     lazy
       (Array.to_list waves |> List.filter_map ~f:(create_view_for_wave ~update_view env))
   in
   let views_for_waves = Lazy.force views_for_waves in
+  let selected_cycle_textfield = Lazy.force selected_cycle_textfield in
   let resize_and_redraw () =
     List.iter views_for_waves ~f:View_element.resize;
     update_view ()
@@ -189,16 +221,6 @@ let render
   let row_style =
     At.style (Jstr.v "display: flex; margin-left: -5px; margin-right: -5px;")
   in
-  let waves_header =
-    List.map column_specs ~f:(fun column_spec ->
-      let { Column_spec.column_name; accessor = _; flex_pc; scroll_to_right = _ } =
-        column_spec
-      in
-      div
-        ~at:[ column_style; At.style (Jstr.v (sprintf "flex: %d%%;" flex_pc)) ]
-        [ b [ txt' (Column_name.to_string column_name) ] ])
-    |> div ~at:[ row_style ]
-  in
   let columns =
     List.map column_specs ~f:(fun column_spec ->
       let { Column_spec.column_name = _; accessor; flex_pc; scroll_to_right } =
@@ -209,9 +231,7 @@ let render
           [ tbody
               (List.map views_for_waves ~f:(fun view ->
                  let line_height = Env.canvas_height_in_pixels env in
-                 let at =
-                   [ At.style (Jstr.v (sprintf "line-height: %fpx" line_height)) ]
-                 in
+                 let at = [ At.style (Jstr.v (sprintf "height: %fpx" line_height)) ] in
                  tr ~at [ accessor (View_element.wave_row view) ]))
           ]
       in
@@ -249,37 +269,44 @@ let render
     Ev.resize
     (fun (_ : _ Ev.t) -> update_canvas_width_on_resize ())
     (Ev.target_of_jv (Window.to_jv G.window));
-  let waves_div = div [ waves_header; El.div ~at:[ row_style ] columns ] in
+  let waves_div = div [ El.div ~at:[ row_style ] columns ] in
+  let delta_half_a_page env =
+    Int.max 1 ((Env.num_cycles_that_can_fit_in_canvas env + 1) / 2)
+  in
   div
     [ p
         [ create_update_starting_cycle_button
             env
-            ~action:(Fast_backward "|<<")
+            ~action:(Fast_backward (Icons.to_beginning_of_simulation ()))
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = "<<"; delta = -10 })
+            ~action:
+              (Delta
+                 { icon = Icons.backwards_fast ()
+                 ; delta = Fn.compose Int.neg delta_half_a_page
+                 })
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = "<"; delta = -1 })
+            ~action:(Delta { icon = Icons.backwards_normal (); delta = Fn.const (-1) })
+            ~update_view
+        ; selected_cycle_textfield
+        ; create_update_starting_cycle_button
+            env
+            ~action:(Delta { icon = Icons.forwards_normal (); delta = Fn.const 1 })
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = ">"; delta = 1 })
+            ~action:(Delta { icon = Icons.forwards_fast (); delta = delta_half_a_page })
             ~update_view
         ; create_update_starting_cycle_button
             env
-            ~action:(Delta { icon = ">>"; delta = 10 })
-            ~update_view
-        ; create_update_starting_cycle_button
-            env
-            ~action:(Fast_forward ">>|")
+            ~action:(Fast_forward (Icons.to_end_of_simulation ()))
             ~update_view
         ; create_zoom_button ~update_view env `In
         ; create_zoom_button ~update_view env `Out
         ]
-    ; div [ counters_div ]
     ; waves_div
     ]
 ;;

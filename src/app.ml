@@ -4,8 +4,14 @@ open Fut.Syntax
 module Bits = Hardcaml.Bits
 
 module Make (Design : Design.S) = struct
-  let background colour =
+  let _background colour =
     At.v (Jstr.v "style") (Jstr.v ("background:#" ^ Printf.sprintf "%.6x" colour))
+  ;;
+
+  let find_id id =
+    match Document.find_el_by_id G.document (Jstr.v id) with
+    | None -> raise_s [%message "Hardcaml application div was not found" (id : string)]
+    | Some el -> el
   ;;
 
   module App_divs = struct
@@ -17,21 +23,28 @@ module Make (Design : Design.S) = struct
       ; ports : El.t
       ; simulation : El.t
       ; rtl : El.t
+      ; apply : El.t
+      ; verilog : El.t
+      ; vhdl : El.t
+      ; hierarchical_rtl : El.t
       }
 
-    let create parameter_table =
-      let parameters = El.div ~at:[ background 0xf8f8f8 ] [ parameter_table ] in
-      let control = El.div [] in
-      let status = El.div [] in
-      let utilization = El.div ~at:[ background 0xf0f0f0 ] [] in
-      let ports = El.div ~at:[ background 0xe8e8e8 ] [] in
-      let simulation = El.div [] in
-      let rtl = El.div ~at:[ background 0xe0e0e0 ] [] in
-      { parameters; control; status; utilization; ports; simulation; rtl }
-    ;;
-
-    let all { parameters; control; status; utilization; ports; simulation; rtl } =
-      [ parameters; control; status; utilization; ports; simulation; rtl ]
+    let create params =
+      let parameters = find_id "hardcaml_app-parameters" in
+      let apply = El.button [ El.txt' "Apply" ] in
+      El.set_children parameters (List.concat [ params; [ apply ] ]);
+      { parameters
+      ; control = El.div []
+      ; status = find_id "hardcaml_app-status"
+      ; utilization = find_id "hardcaml_app-utilization"
+      ; ports = find_id "hardcaml_app-ports"
+      ; simulation = El.div []
+      ; rtl = El.div []
+      ; apply
+      ; verilog = find_id "hardcaml_app-verilog"
+      ; vhdl = find_id "hardcaml_app-vhdl"
+      ; hierarchical_rtl = find_id "hardcaml_app-hierarchical"
+      }
     ;;
   end
 
@@ -81,6 +94,17 @@ module Make (Design : Design.S) = struct
     e, fun () -> { default with typ = Int (v ()) }
   ;;
 
+  let wrap (default : Parameter.t) input =
+    let input, get = input default in
+    let inner = El.div [ El.txt' default.description ] in
+    let outer = El.div [ inner; input ] in
+    El.set_class (Jstr.v "growing-textbox") true outer;
+    El.set_class (Jstr.v "textbox-container") true outer;
+    outer, get
+  ;;
+
+  let int_input default = wrap default int_input
+
   let float_input (default : Parameter.t) =
     let e = El.input () in
     let v () = El.prop El.Prop.value e |> Jstr.to_string |> Float.of_string in
@@ -93,6 +117,8 @@ module Make (Design : Design.S) = struct
     e, fun () -> { default with typ = Float (v ()) }
   ;;
 
+  let float_input default = wrap default float_input
+
   (* Input element for strings *)
   let string_input (default : Parameter.t) =
     let e = El.input () in
@@ -102,12 +128,18 @@ module Make (Design : Design.S) = struct
     e, fun () -> { default with typ = String (v ()) }
   ;;
 
+  let string_input default = wrap default string_input
+
   let flag_input (default : Parameter.t) =
     let e = El.input () in
     El.set_at (Jstr.v "type") (Some (Jstr.v "checkbox")) e;
     El.set_prop El.Prop.checked (Parameter.flag_exn default) e;
-    e, fun () -> { default with typ = Flag (El.prop El.Prop.checked e) }
+    let l = El.label [ e; El.txt' default.description ] in
+    El.set_inline_style (Jstr.v "white-space") (Jstr.v "pre") l;
+    l, fun () -> { default with typ = Flag (El.prop El.Prop.checked e) }
   ;;
+
+  (* let flag_input default = wrap default flag_input *)
 
   let symbol_input (default : Parameter.t) =
     let p = Parameter.symbol_exn default in
@@ -131,10 +163,14 @@ module Make (Design : Design.S) = struct
         { default with typ = Symbol { options = p.options; value } } )
   ;;
 
+  let symbol_input default = wrap default symbol_input
+
   (* Create a table for the parameter, and return and accessor function. *)
   let parameters () =
     let parameters =
-      List.map Design.default_parameters ~f:(fun (name, ({ typ; description } as p)) ->
+      List.map
+        Design.default_parameters
+        ~f:(fun (name, ({ typ; description = _ } as p)) ->
         let value_, get =
           match typ with
           | String _ -> string_input p
@@ -143,12 +179,11 @@ module Make (Design : Design.S) = struct
           | Flag _ -> flag_input p
           | Symbol _ -> symbol_input p
         in
-        let row = List.map [ El.txt' description; value_ ] ~f:(fun e -> El.td [ e ]) in
-        name, El.tr row, get)
+        name, value_, get)
     in
     let get () = List.map parameters ~f:(fun (n, _, get) -> n, get ()) in
-    let table = El.table (List.map parameters ~f:(fun (_, v, _) -> v)) in
-    get, table
+    let parameters = List.map parameters ~f:(fun (_, v, _) -> v) in
+    get, parameters
   ;;
 
   let generate_ports parameters div _ =
@@ -167,19 +202,12 @@ module Make (Design : Design.S) = struct
     in
     let inputs = List.map (D.I.to_list D.I.t) ~f:port in
     let outputs = List.map (D.O.to_list D.O.t) ~f:port in
-    let table =
+    let table dirn ports =
       let span2 = At.v (Jstr.v "colspan") (Jstr.of_int 2) in
       El.table
-        ([ [ El.tr [ El.th ~at:[ span2 ] [ El.txt' "inputs" ] ] ]
-         ; [ El.tr [ El.th [ El.txt' "name" ]; El.th [ El.txt' "width" ] ] ]
-         ; inputs
-         ; [ El.tr [ El.th ~at:[ span2 ] [ El.txt' "outputs" ] ] ]
-         ; [ El.tr [ El.th [ El.txt' "name" ]; El.th [ El.txt' "width" ] ] ]
-         ; outputs
-         ]
-        |> List.concat)
+        ([ [ El.tr [ El.th ~at:[ span2 ] [ El.txt' dirn ] ] ]; ports ] |> List.concat)
     in
-    El.set_children div [ table ]
+    El.set_children div [ table "inputs" inputs; table "outputs" outputs ]
   ;;
 
   let table_of_utilization div (u : Utilization.t) =
@@ -212,9 +240,9 @@ module Make (Design : Design.S) = struct
         ; Option.map u.not_gates ~f:(tr "not gates")
         ; Option.map u.equals ~f:(tr "equality")
         ; Option.map u.comparators ~f:(tr "comparators")
-        ; Option.map u.multiplexers ~f:(tr "multiplexors")
+        ; Option.map u.multiplexers ~f:(tr "multiplexers")
         ; Option.map u.registers ~f:(tr "registers")
-        ; Option.map u.memories ~f:(tr "memoriess")
+        ; Option.map u.memories ~f:(tr "memories")
         ; Option.map u.constants ~f:(tr "constants")
         ; Option.map u.wires ~f:(tr "wires")
         ; Option.map u.part_selects ~f:(tr "part selects")
@@ -257,7 +285,7 @@ module Make (Design : Design.S) = struct
   let rec process_messages_from_worker (divs : App_divs.t) buttons worker =
     let recv_from_worker e =
       let clear () =
-        El.set_children divs.status [];
+        El.set_children divs.status [ El.txt' "Copyright Jane Street - 2022" ];
         Control_buttons.enable_all buttons
       in
       let (msg : Messages.Worker_to_app.t) = Brr_io.Message.Ev.data (Ev.as_type e) in
@@ -265,9 +293,14 @@ module Make (Design : Design.S) = struct
       | Utilization u ->
         table_of_utilization divs.utilization u;
         clear ()
-      | Rtl rtl ->
+      | Rtl (rtl, language) ->
+        let language =
+          match language with
+          | Verilog -> ".v"
+          | Vhdl -> ".vhd"
+        in
         download
-          ~filename:[%string "%{Design.top_level_name}.v"]
+          ~filename:[%string "%{Design.top_level_name}.%{language}"]
           ~contents:(Bytes.to_string rtl);
         clear ()
       | Simulation result ->
@@ -294,6 +327,12 @@ module Make (Design : Design.S) = struct
     process_messages_from_worker divs buttons worker
   ;;
 
+  let on_apply worker (divs : App_divs.t) parameters _ =
+    generate_ports parameters divs.ports ();
+    Brr_webworkers.Worker.post worker (Messages.App_to_worker.Utilization (parameters ()));
+    Brr_webworkers.Worker.post worker (Messages.App_to_worker.Simulation (parameters ()))
+  ;;
+
   let run_app div_app worker =
     let parameters, parameter_table = parameters () in
     let divs = App_divs.create parameter_table in
@@ -304,9 +343,28 @@ module Make (Design : Design.S) = struct
     Control_buttons.listen_and_post worker buttons buttons.simulation (fun () ->
       Messages.App_to_worker.Simulation (parameters ()));
     Control_buttons.listen_and_post worker buttons buttons.rtl (fun () ->
-      Messages.App_to_worker.Rtl (parameters ()));
-    El.set_children div_app (App_divs.all divs);
-    El.set_children divs.control (Control_buttons.all buttons);
+      Messages.App_to_worker.Rtl
+        { parameters = parameters (); language = Verilog; hierarchical_rtl = true });
+    Ev.listen
+      Ev.click
+      (fun _ ->
+        Brr_webworkers.Worker.post
+          worker
+          (Messages.App_to_worker.Rtl
+             { parameters = parameters (); language = Verilog; hierarchical_rtl = true }))
+      (El.as_target divs.verilog);
+    Ev.listen
+      Ev.click
+      (fun _ ->
+        Brr_webworkers.Worker.post
+          worker
+          (Messages.App_to_worker.Rtl
+             { parameters = parameters (); language = Vhdl; hierarchical_rtl = true }))
+      (El.as_target divs.vhdl);
+    Ev.listen Ev.click (on_apply worker divs parameters) (El.as_target divs.apply);
+    El.set_children div_app [ divs.simulation ];
+    (* El.set_children divs.control (Control_buttons.all buttons); *)
+    on_apply worker divs parameters ();
     Fut.map (fun _ -> ()) (process_messages_from_worker divs buttons worker)
   ;;
 
@@ -319,11 +377,7 @@ module Make (Design : Design.S) = struct
     else
       let* _ = Ev.next Ev.load (Window.as_target G.window) in
       (* Start running the js code *)
-      let div_app =
-        match Document.find_el_by_id G.document (Jstr.v div) with
-        | None -> raise_s [%message "Hardcaml application div was not found"]
-        | Some div_app -> div_app
-      in
+      let div_app = find_id div in
       let worker =
         try Brr_webworkers.Worker.create (Jstr.v javascript) with
         | exn -> raise_s [%message "Failed to create webworker." (exn : exn)]
