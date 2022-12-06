@@ -16,7 +16,7 @@ module Make (Design : Design.S) = struct
 
   module App_divs = struct
     type t =
-      { parameters : El.t
+      { parameters : El.t option
       ; control : El.t
       ; status : El.t
       ; utilization : El.t
@@ -30,9 +30,10 @@ module Make (Design : Design.S) = struct
       }
 
     let create params =
-      let parameters = find_id "hardcaml_app-parameters" in
+      let parameters = try Some (find_id "hardcaml_app-parameters") with _ -> None in
       let apply = El.button [ El.txt' "Apply" ] in
-      El.set_children parameters (List.concat [ params; [ apply ] ]);
+      Option.iter parameters ~f:(fun parameters ->
+        El.set_children parameters (List.concat [ params; [ apply ] ]));
       { parameters
       ; control = El.div []
       ; status = find_id "hardcaml_app-status"
