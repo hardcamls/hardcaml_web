@@ -1,0 +1,6 @@
+(executables
+ (names cordic prefix lfsr sort rac mult)
+ (modes js)
+ (promote)
+ (libraries hardcaml_circuits hardcaml_web)
+ (preprocess (pps ppx_jane ppx_deriving_hardcaml)))

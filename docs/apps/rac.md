@@ -1,6 +1,7 @@
 ---
 layout: app
 title: Rom Accumulator
+hardcaml_app: /apps/rac.bc.js
 ---
 
 The distributed arithmetic ROM accumulator is a bit serial, area efficient way of

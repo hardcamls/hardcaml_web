@@ -1,6 +1,7 @@
 ---
 layout: app
 title: CORDIC
+hardcaml_app: /apps/cordic.bc.js
 ---
 
 [CORIC](https://en.wikipedia.org/wiki/CORDIC") is an iterative shift-add

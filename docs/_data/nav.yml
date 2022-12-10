@@ -60,5 +60,15 @@
   sublink_id: "hardcaml-on-the-web-children"
   category: hardcaml-on-the-web
   sublinks:
-    - title: Sorting
-      link: /hardcaml_documentation/sorting
+    - title: Sorting Network
+      link: /apps/sort
+    - title: Rom-Accumulator
+      link: /apps/rac
+    - title: Multipliers
+      link: /apps/mult
+    - title: Linear Feedback Shift Register
+      link: /apps/lfsr
+    - title: Parallel Prefix Adder
+      link: /apps/prefix
+    - title: CORDIC
+      link: /apps/cordic

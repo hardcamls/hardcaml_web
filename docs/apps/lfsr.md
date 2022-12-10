@@ -1,6 +1,7 @@
 ---
 layout: app
 title: Linear feedback shift register
+hardcaml_app: /apps/lfsr.bc.js
 ---
 
 A LFSR can be used to compute a psueodo-random sequence of numbers.  For a given

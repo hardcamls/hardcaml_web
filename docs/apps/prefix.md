@@ -1,6 +1,7 @@
 ---
 layout: app
 title: Parallel prefix adder
+hardcaml_app: /apps/prefix.bc.js
 ---
 
 A parallel prefix adder utilises a parallel prefix network to perform binary
