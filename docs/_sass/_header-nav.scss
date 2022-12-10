@@ -1,0 +1,28 @@
+nav.navbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left:0;
+    z-index: 9;
+    background-color: black;
+    padding: 21px 0;
+    z-index: 999;
+
+    .container-fluid {
+        justify-content: space-between;
+    }
+
+    .navbar-toggler {
+	    border: 0;
+	    box-shadow: none;
+    }
+    #hamburger-icon {
+        width: 30px;
+        margin-left: 20px;
+    }
+
+    #hardcaml-logo {
+        margin-left: 10px;
+        width: 200px;
+    }
+}

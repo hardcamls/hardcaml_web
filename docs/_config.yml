@@ -1,1 +1,15 @@
 baseurl: "https://hardcaml.com"
+
+markdown: kramdown
+kramdown:
+  math_engine: null
+highlighter: rouge
+
+plugins:
+  - jekyll-relative-links
+
+exclude:
+  - apps/dune
+  - apps/*.ml
+  - apps/.#*
+  - apps/*.bc-for-jsoo

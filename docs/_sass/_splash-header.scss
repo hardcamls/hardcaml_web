@@ -1,0 +1,80 @@
+
+.splash-header {
+	position: relative;
+	height: 600px;
+	background: linear-gradient( 45deg, #555555 0%, #000000 100% );
+	box-shadow: $shadow-bottom;
+	overflow: hidden;
+
+	.content {
+		position: absolute;
+		left: 50%;
+		transform: translate(-50%);
+		height: 100%;
+		width: 100%;
+		max-width: 1000px;
+	}
+
+	.logo-splash {
+		position: absolute;
+		height: 90%;
+		top: 48%;
+		left: 45%;
+		transform: translate(-50%,-50%);
+	}
+
+	.text {
+		position: absolute;
+		width: 40%;
+		top: 44.5%;
+    left: 56.5%;
+    color: white;
+		h1 {
+			font-size: 50px;
+			margin-left: 0;
+			margin-bottom: 10px;
+      text-shadow: 2px 2px black;
+		}
+	}
+
+
+
+
+	@media ( max-width: 1300px ) {
+		height: auto;
+		.content {
+			position: relative;
+		}
+    .logo-splash {
+    	position: relative;
+    	left: 50%;
+    	height: auto;
+    	top: auto;
+    	width: 100%;
+    	transform: translate(-50%);
+    	padding: $page-margin;
+    }
+    .text {
+    	position: relative;
+    	width: 100%;
+    	left: 50%;
+    	transform: translate(-50%);
+    	padding: 0 $page-margin $page-margin;
+    	p:last-child {
+    		margin: 0;
+    	}
+    }
+	}
+
+	@media ( max-width: 500px ) {
+    .logo-splash {
+    	padding: $page-margin-mobile;
+    }
+    .text {
+    	padding: $page-margin-mobile;
+    }
+	}
+
+
+
+}

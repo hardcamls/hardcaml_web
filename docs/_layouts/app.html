@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ page.title }}</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="preconnect" href="https://rsms.me/">
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+        <link href="/assets/css/app-style.css" rel="stylesheet">
+        <link href="/assets/css/app-textbox.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=UnifrakturMaguntia">
+        <link rel="stylesheet" href="/assets/jqmath-0.4.3.min.css">
+        <script src="/assets/jqmath-vanilla.min.js"></script>
+
+        <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+        <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+
+        <script type="text/javascript" defer="defer" src="{{page.hardcaml_app}}"></script>
+        <meta name="description" content="Hardcaml Web Application">
+        <style>
+         .material-icons.small { font-size: 16px; }
+        </style>
+    </head>
+    <body>
+        <header> {{page.title}} </header>
+        <aside>
+            {% unless page.disable_parameters == "true" %}
+            <details open>
+                <summary> Parameters </summary>
+                <!-- pack for veritical alignment, wrap to horizontal -->
+                <div class="wrap" id="hardcaml_app-parameters">
+                </div>
+            </details>
+            {% endunless %}
+            <details> <summary> Download RTL </summary>
+                <div class="wrap">
+                    <a href="#" id="hardcaml_app-verilog">Verilog</a> or
+                    <a href="#" id="hardcaml_app-vhdl">VHDL</a>
+                    <label><input type="checkbox" checked="true" id="hardcaml_app-hierarchical">
+                    </input>Hierarchical</label>
+                </div>
+            </details>
+            <details> <summary> Ports </summary> <div id="hardcaml_app-ports"></div> </details>
+            <details> <summary> Utilization </summary> <div id="hardcaml_app-utilization"></div></details>
+        </aside>
+        <main>
+            <details open>
+                <summary></summary>
+                {{ content }}
+            </details>
+            <div id="hardcaml_app"></div>
+        </main>
+        <footer id="hardcaml_app-status"> Copyright Jane Street - 2022 </footer>
+    </body>
+</html>

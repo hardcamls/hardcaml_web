@@ -1,0 +1,139 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+:root {
+    color-scheme: dark;
+    background:white;
+
+    font-family: 'Inter var', 'Inter', sans-serif; 
+    font-size: 16px;
+}
+
+body, :root {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    overflow:auto;
+
+    display: flex;
+    flex-direction:column;
+}
+
+header {
+    background: black;
+    color: #bbc0ce;
+    font-weight: 200;
+    font-size: 1.5em;
+    padding-left: 0.25em; 
+}
+
+main {
+    background: #202124;
+    color: white;
+    flex-grow: 1;
+    overflow:auto;
+    padding: 1em;
+}
+
+aside {
+    box-shadow: 0 0 5px #3f3e3e;
+    background: #292a2d;
+    color: #bebebe;
+
+    max-height:75vh;
+    max-width:33vw;
+    overflow:auto;
+
+    position: absolute;
+    right: 0.5em;
+    top: 2.5em;
+
+    border-radius: 5px;
+    border: 1px solid #717b97;
+
+    padding:5px;
+    gap: 0.5em;
+}
+
+aside button {
+    margin-top: 0.5em;
+    width: 100%;
+    cursor: pointer;
+}
+
+aside {
+    display: flex;
+    flex-direction: column;
+    z-index:10;
+}
+
+details {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+details > summary {
+    cursor: pointer;
+    user-select: none;
+}
+
+footer {
+    background: black;
+    color: grey;
+    font-size: 0.8em;
+    line-height: 1em;
+    font-weight: 200;
+    padding: 0.25em;
+    padding-left: 0.5em;
+}
+
+input {
+    max-width: 5em;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+p {
+    margin:0;
+}
+
+.pack {
+    display: flex;
+    flex-direction: column;
+}
+
+main>details>summary {
+    font-size:1.1em;
+
+    background: #161719;
+    margin: -0.5em;
+    margin-bottom: 0;
+    padding-left: 0.25em;
+    border-bottom: 1px solid #717b9790;
+}
+
+main>details {
+    max-width: 60vw;
+    margin-bottom: 2em;
+    padding: 0.5em;
+
+    background: #292a2d;
+    color: #bebebe;
+
+    max-height:50vh;
+    overflow-y:auto;
+    border-radius: 5px;
+    border: 1px solid #717b97;
+}
+

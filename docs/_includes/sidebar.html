@@ -1,0 +1,39 @@
+<div id="sidebar">
+    {% for section in site.data.nav %}
+    <ul class="list-unstyled components {% if page.category == section.category %}show{% endif %}">
+        <li {% if page.category == section.category %}class="active"{% endif %}>
+            {% if section.sublinks %}
+            <a href="#{{ section.sublink_id }}"
+               data-toggle="collapse"
+               aria-expanded="{% if page.category == section.category %}true{% else %}false{% endif %}"
+               class="dropdown-toggle">{{ section.title }}</a>
+            <ul class="list-unstyled {% if page.category == section.category %}show{% else %}collapse{% endif %}"
+                id="{{ section.sublink_id }}">
+                {% for subsection in section.sublinks %}
+                <li {% if page.category == section.category and (page.title == subsection.title or page.title == link.title_id) %}class="active"{% endif %}>
+                    {% if subsection.sublinks %}
+                    <a href="#{{ subsection.sublink_id }}"
+                       data-toggle="collapse"
+                       aria-expanded="{% if page.subcategory == subsection.subcategory %}true{% else %}false{% endif %}"
+                       class="dropdown-toggle">{{ subsection.title }}</a>
+                    <ul class="collapse list-unstyled {% if page.subcategory == subsection.subcategory %}show{% endif %}"
+                        id="{{ subsection.sublink_id }}">
+                        {% for link in subsection.sublinks %}
+                        <li {% if page.category == section.category and (page.title == link.title or page.title == link.title_id)" %}class="active"{% endif %}>
+                            <a href="{{ link.link }}">{{ link.title }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <a href="{{ subsection.link }}">{{ subsection.title }}</a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <a href="{{ section.link }}">{{ section.title }}</a>
+            {% endif %}
+        </li>
+    </ul>
+    {% endfor %}
+</div>

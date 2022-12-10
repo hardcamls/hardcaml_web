@@ -1,7 +1,0 @@
-(executables
- (names hardcaml_app)
- (modes js)
- (promote)
- (libraries hardcaml_circuits hardcaml_web)
- (preprocess (pps ppx_jane ppx_deriving_hardcaml))
-)
