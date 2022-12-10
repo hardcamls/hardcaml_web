@@ -1,0 +1,64 @@
+- title: Getting Started
+  sublink_id: "getting-started-children"
+  category: getting-started
+  sublinks:
+    - title: Introduction
+      link: /hardcaml_documentation/introduction
+    - title: Installing
+      link: /hardcaml_documentation/installing_with_opam
+    - title: Combinational logic
+      link: /hardcaml_documentation/combinational_logic
+    - title: Sequential logic
+      link: /hardcaml_documentation/sequential_logic
+    - title: Naming
+      link: /hardcaml_documentation/naming
+    - title: Always API
+      link: /hardcaml_documentation/rtl_generation
+    - title: Instantiation
+      link: /hardcaml_documentation/instantiation
+    - title: Circuits
+      link: /hardcaml_documentation/circuits
+    - title: Generating RTL
+      link: /hardcaml_documentation/rtl_generation
+    - title: Simulation
+      link: /hardcaml_documentation/simulation
+    - title: Waveforms
+      link: /hardcaml_documentation/waveforms
+- title: Advanced Concepts
+  sublink_id: "advanced-concepts-children"
+  category: advanced-concepts
+  sublinks:
+    - title: Interfaces
+      link: /hardcaml_documentation/hardcaml_interfaces
+    - title: Hierarchy
+      link: /hardcaml_documentation/module_hierarchy
+    - title: Simulating with Interfaces
+      link: /hardcaml_documentation/simulating_with_interfaces
+    - title: Writing State machines
+      link: /hardcaml_documentation/state_machine_always_api
+    - title: Enums
+      link: /hardcaml_documentation/enums
+    - title: Interactive Waveforms
+      link: /hardcaml_documentation/waveterm_interactive_viewer
+- title: Worked Examples
+  sublink_id: "examples-children"
+  category: examples
+  sublinks:
+    - title: Simple Counter
+      link: /hardcaml_documentation/counter_example
+    - title: Serial Multiplier
+      link: /hardcaml_documentation/serial_multiplier_example
+    - title: Fibonacci Numbers
+      link: /hardcaml_documentation/fibonacci_example
+- title: Libraries
+  sublink_id: "libraries-children"
+  category: libraries
+  sublinks:
+    - title: Fast Simulation
+      link: /hardcaml_documentation/accelerating_simulations
+- title: Hardcaml on the Web
+  sublink_id: "hardcaml-on-the-web-children"
+  category: hardcaml-on-the-web
+  sublinks:
+    - title: Sorting
+      link: /hardcaml_documentation/sorting

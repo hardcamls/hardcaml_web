@@ -1,0 +1,25 @@
+.cb-cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    border-radius:0;
+    display: none;
+
+    .button-wrapper { margin-top: 10px; }
+
+    #disagree-cookies-msg {
+        display: none;
+    }
+
+    &.denied {
+        background-color: #ffcf5b;
+    }
+
+    #deny-link {
+        text-decoration: underline;
+        border: 0;
+        background: transparent;
+    }
+}

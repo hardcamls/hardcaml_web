@@ -1,1 +1,4 @@
-baseurl: "https://hardcaml.com"
+markdown: kramdown
+highlighter: rouge
+plugins:
+  - jekyll-relative-links

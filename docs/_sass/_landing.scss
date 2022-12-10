@@ -1,0 +1,125 @@
+.landing {
+
+	.wrapper .page {
+		padding: 0;
+	}
+
+	.heading-ribbon-container {
+    width: 100%;
+    height: 100px;
+    padding: 0 $page-margin;
+    margin: 0 0 50px 0;
+	}
+
+	.heading-ribbon {
+		position: relative;
+		width: 300px;
+		height: 100%;
+		background-color: #000;
+	}
+
+	.zprize-heading {
+		position: absolute;
+		width: 100px;
+		top: 50%;
+		left: 39px;
+		transform: translate(0,-50%);
+	}
+
+	h1 {
+		margin-left: $page-margin;
+		margin-bottom: 0;
+	}
+
+	h2 {
+	  font-family: $bold-font;
+		font-size: 14px;
+	  margin-bottom: 16px;
+	  text-transform: uppercase;
+	}
+
+	.columns-container {
+		display: flex;
+		justify-content: space-between;
+		margin: 0 $page-margin 150px;
+		gap: 8%;
+		.column {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			flex: 1 1 0;
+			width: 48%;
+	    border: 1px solid #000;
+	    margin-top: 25px;
+	    .upper {
+	    	flex: 1 1 0;
+		    .heading {
+			    padding: 10px 0 10px;
+		    	margin-top: 0;
+		    	color: #fff;
+		    	background-color: #000;
+		    	text-align: center;
+		    	h2 {
+		    		margin: 2px 0 0;
+		    	}
+		    }
+		    .content {
+		    	padding: 20px;
+		    }
+	    }
+	    a {
+	    	display: flex;
+	    	flex-direction: column;
+	    	flex: 0 1 0;
+	    	align-self: flex-end;
+	    	width: 100%;
+		    .cta-button {
+		    	background-color: #ffa1b1;
+		    	text-align: center;
+		    	font-family: $medium-font;
+		    	color: #fff;
+		      border-radius: 4px;
+	  	    margin: 0 20px 20px;
+	  	    height: 30px;
+			    p {
+			    	position: relative;
+			    	top: 8px;
+			    	font-size: 13px;
+			    	font-weight: bold;
+				    margin-bottom: 0;
+			    }
+		    }
+	    }
+		}
+	}
+
+
+
+	@media ( max-width: 800px ) {
+		.columns-container {
+			display: block;
+			.column {
+				width: 100%;
+			}
+		}
+		.heading-ribbon {
+			max-width: 100%;
+		}
+	}
+
+
+	@media ( max-width: 500px ) {
+		.heading-ribbon-container {
+	    padding: 0 $page-margin-mobile;
+		}
+		h1 {
+			margin-left: $page-margin-mobile;
+		}
+		.columns-container {
+			margin: 0 $page-margin-mobile 150px;
+		}
+	}
+
+
+
+}

@@ -1,0 +1,80 @@
+
+@font-face {
+  font-family: "Alright Sans LTV Light";
+  font-style: normal;
+  font-weight: normal;
+  src: url("/static/fonts/Alright-Sans-LTV-Light/" + "dcbd152c-88d2-4e8c-95f4-9dd992d5e181-2.eot");
+  src: url("/static/fonts/Alright-Sans-LTV-Light/" + "dcbd152c-88d2-4e8c-95f4-9dd992d5e181-2.eot#iefix") format("embedded-opentype"),
+     url("/static/fonts/Alright-Sans-LTV-Light/" + "dcbd152c-88d2-4e8c-95f4-9dd992d5e181-3.woff") format("woff"),
+     url("/static/fonts/Alright-Sans-LTV-Light/" + "dcbd152c-88d2-4e8c-95f4-9dd992d5e181-5.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Alright Sans LTV Light";
+  font-style: italic;
+  font-weight: normal;
+  src: url("/static/fonts/Alright-Sans-LTV-Light-Italic/" + "e5de3f3d-4fbb-40e1-b7d4-429d0d2e02b5-2.eot");
+  src: url("/static/fonts/Alright-Sans-LTV-Light-Italic/" + "e5de3f3d-4fbb-40e1-b7d4-429d0d2e02b5-2.eot#iefix") format("embedded-opentype"),
+       url("/static/fonts/Alright-Sans-LTV-Light-Italic/" + "e5de3f3d-4fbb-40e1-b7d4-429d0d2e02b5-3.woff") format("woff"),
+       url("/static/fonts/Alright-Sans-LTV-Light-Italic/" + "e5de3f3d-4fbb-40e1-b7d4-429d0d2e02b5-5.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Alright Sans LTV Regular";
+  font-weight: normal;
+  font-style: normal;
+  src: url('/static/fonts/Alright-Sans-LTV-Regular/' + "2845461b-a976-4fe2-b0c5-624efc78805d-2.eot");
+  src: url('/static/fonts/Alright-Sans-LTV-Regular/' + "2845461b-a976-4fe2-b0c5-624efc78805d-2.eot?#iefix") format("embedded-opentype"),
+       url('/static/fonts/Alright-Sans-LTV-Regular/' + "2845461b-a976-4fe2-b0c5-624efc78805d-3.woff") format("woff"),
+       url('/static/fonts/Alright-Sans-LTV-Regular/' + "2845461b-a976-4fe2-b0c5-624efc78805d-5.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Alright Sans LTV Regular";
+  font-style: italic;
+  font-weight: normal;
+  src: url("/static/fonts/Alright-Sans-LTV-Regular-Italic/" + "76a1dc02-a296-4f09-8362-c6ffa38c63dc-2.eot");
+  src: url("/static/fonts/Alright-Sans-LTV-Regular-Italic/" + "76a1dc02-a296-4f09-8362-c6ffa38c63dc-2.eot#iefix") format("embedded-opentype"),
+       url("/static/fonts/Alright-Sans-LTV-Regular-Italic/" + "76a1dc02-a296-4f09-8362-c6ffa38c63dc-3.woff") format("woff"),
+       url("/static/fonts/Alright-Sans-LTV-Regular-Italic/" + "76a1dc02-a296-4f09-8362-c6ffa38c63dc-5.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Alright Sans LTV Medium";
+  font-style: normal;
+  font-weight: bold;
+  src: url("/static/fonts/Alright-Sans-LTV-Medium/" + "53cec755-c23c-424d-8572-4a0378f0c3d8-2.eot");
+  src: url("/static/fonts/Alright-Sans-LTV-Medium/" + "53cec755-c23c-424d-8572-4a0378f0c3d8-2.eot#iefix") format("embedded-opentype"),
+       url("/static/fonts/Alright-Sans-LTV-Medium/" + "53cec755-c23c-424d-8572-4a0378f0c3d8-3.woff") format("woff"),
+       url("/static/fonts/Alright-Sans-LTV-Medium/" + "53cec755-c23c-424d-8572-4a0378f0c3d8-5.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Alright Sans LTV Medium";
+  font-style: italic;
+  font-weight: bold;
+  src: url("/static/fonts/Alright-Sans-LTV-Medium-Italic/" + "53cec755-c23c-424d-8572-4a0378f0c3d8-2.eot");
+  src: url("/static/fonts/Alright-Sans-LTV-Medium-Italic/" + "53cec755-c23c-424d-8572-4a0378f0c3d8-2.eot#iefix") format("embedded-opentype"),
+       url("/static/fonts/Alright-Sans-LTV-Medium-Italic/" + "53cec755-c23c-424d-8572-4a0378f0c3d8-3.woff") format("woff"),
+       url("/static/fonts/Alright-Sans-LTV-Medium-Italic/" + "53cec755-c23c-424d-8572-4a0378f0c3d8-5.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Alright Sans LTV Bold";
+  font-style: normal;
+  font-weight: bolder;
+  src: url("/static/fonts/Alright-Sans-LTV-Bold/" + "99c5df9c-344e-4a66-b917-e8854e06ff97-2.eot");
+  src: url("/static/fonts/Alright-Sans-LTV-Bold/" + "99c5df9c-344e-4a66-b917-e8854e06ff97-2.eot#iefix") format("embedded-opentype"),
+       url("/static/fonts/Alright-Sans-LTV-Bold/" + "99c5df9c-344e-4a66-b917-e8854e06ff97-3.woff") format("woff"),
+       url("/static/fonts/Alright-Sans-LTV-Bold/" + "99c5df9c-344e-4a66-b917-e8854e06ff97-5.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Alright Sans LTV Bold";
+  font-style: italic;
+  font-weight: bolder;
+  src: url("/static/fonts/Alright-Sans-LTV-Bold-Italic/" + "f8c83d76-2639-4503-9cb7-dc0e6d88dfe3-2.eot");
+  src: url("/static/fonts/Alright-Sans-LTV-Bold-Italic/" + "f8c83d76-2639-4503-9cb7-dc0e6d88dfe3-2.eot#iefix") format("embedded-opentype"),
+       url("/static/fonts/Alright-Sans-LTV-Bold-Italic/" + "f8c83d76-2639-4503-9cb7-dc0e6d88dfe3-3.woff") format("woff"),
+       url("/static/fonts/Alright-Sans-LTV-Bold-Italic/" + "f8c83d76-2639-4503-9cb7-dc0e6d88dfe3-5.woff2") format("woff2");
+}
