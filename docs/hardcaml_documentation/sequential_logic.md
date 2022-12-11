@@ -1,6 +1,7 @@
 ---
 title: sequential_logic
 layout: default
+category: getting-started
 ---
 # Sequential Logic
 

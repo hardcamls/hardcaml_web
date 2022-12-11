@@ -1,6 +1,7 @@
 ---
 title: combinational_logic
 layout: default
+category: getting-started
 ---
 # Combinational logic and working with vectors
 

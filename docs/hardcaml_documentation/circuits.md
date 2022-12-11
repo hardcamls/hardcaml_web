@@ -1,6 +1,7 @@
 ---
 title: circuits
 layout: default
+category: getting-started
 ---
 # Circuits
 

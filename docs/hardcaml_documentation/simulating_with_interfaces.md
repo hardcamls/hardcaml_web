@@ -1,6 +1,7 @@
 ---
 title: simulating_with_interfaces
 layout: default
+category: advanced-concepts
 ---
 # Simulating with interfaces
 

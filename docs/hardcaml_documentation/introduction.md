@@ -1,6 +1,7 @@
 ---
 title: introduction
 layout: default
+category: getting-started
 ---
 # Introduction
 

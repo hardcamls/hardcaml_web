@@ -1,6 +1,7 @@
 ---
 title: waveforms
 layout: default
+category: getting-started
 ---
 # Waveforms
 

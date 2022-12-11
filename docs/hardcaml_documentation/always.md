@@ -1,6 +1,7 @@
 ---
 title: always
 layout: default
+category: getting-started
 ---
 # Always DSL
 

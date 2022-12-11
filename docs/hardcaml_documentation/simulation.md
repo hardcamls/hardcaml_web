@@ -1,6 +1,7 @@
 ---
 title: simulation
 layout: default
+category: getting-started
 ---
 # Simulation
 

@@ -1,6 +1,7 @@
 ---
 title: hardcaml_interfaces
 layout: default
+category: advanced-concepts
 ---
 # Hardcaml Interfaces
 

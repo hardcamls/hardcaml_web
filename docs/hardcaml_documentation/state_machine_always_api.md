@@ -1,6 +1,7 @@
 ---
 title: state_machine_always_api
 layout: default
+category: advanced-concepts
 ---
 # Designing State Machines with the Always DSL
 

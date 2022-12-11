@@ -1,6 +1,7 @@
 ---
 title: naming
 layout: default
+category: getting-started
 ---
 # Naming
 

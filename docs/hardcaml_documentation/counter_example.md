@@ -1,6 +1,7 @@
 ---
 title: counter_example
 layout: default
+category: examples
 ---
 # Counter example design
 

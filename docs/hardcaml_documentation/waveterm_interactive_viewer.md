@@ -1,6 +1,7 @@
 ---
 title: waveterm_interactive_viewer
 layout: default
+category: advanced-concepts
 ---
 # Waveterm Interactive Viewer
 

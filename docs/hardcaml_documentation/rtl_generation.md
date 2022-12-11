@@ -1,6 +1,7 @@
 ---
 title: rtl_generation
 layout: default
+category: getting-started
 ---
 # RTL Generation
 

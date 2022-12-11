@@ -1,6 +1,7 @@
 ---
 title: accelerating_simulations
 layout: default
+category: libraries
 ---
 # High performance simulation backends
 

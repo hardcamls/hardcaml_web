@@ -1,6 +1,7 @@
 ---
 title: instantiation
 layout: default
+category: getting-started
 ---
 # Instantiation
 

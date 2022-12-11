@@ -7,7 +7,7 @@ splash-header: true
 
 ## Learn more
 
-[Read more](/hardcaml_documentation/introduction.html) about building hardware the libray 
+[Read more](/hardcaml_documentation/introduction.html) about building hardware with the libray
 and how [we use it](/hardcaml_documentation/hardcaml_interfaces.html) to build complex designs.
 
 ## Get the code

@@ -1,6 +1,7 @@
 ---
 title: fibonacci_example
 layout: default
+category: examples
 ---
 # Computing Finonacci numbers
 

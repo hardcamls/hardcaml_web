@@ -1,6 +1,7 @@
 ---
 title: enums
 layout: default
+category: advanced-concepts
 ---
 # Enums in Hardcaml
 

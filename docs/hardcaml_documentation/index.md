@@ -1,6 +1,7 @@
 ---
 title: index
 layout: default
+category: getting-started
 ---
 # Hardcaml Documentation
 

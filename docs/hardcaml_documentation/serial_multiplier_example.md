@@ -1,6 +1,7 @@
 ---
 title: serial_multiplier_example
 layout: default
+category: examples
 ---
 # Serial multipler example
 

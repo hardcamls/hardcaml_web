@@ -1,6 +1,7 @@
 ---
 title: installing_with_opam
 layout: default
+category: getting-started
 ---
 # Installing the opensource release
 

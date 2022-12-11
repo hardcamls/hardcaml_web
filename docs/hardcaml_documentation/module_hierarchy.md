@@ -1,6 +1,7 @@
 ---
 title: module_hierarchy
 layout: default
+category: advanced-concepts
 ---
 # Module Hierarchies
 
