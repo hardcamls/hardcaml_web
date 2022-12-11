@@ -52,13 +52,13 @@ To create a circuit we must label the inputs and outputs.
 
 Inputs are specified by giving a name and the required bit-width.
 
-```
+```ocaml
 let input_a = Signal.input "a" width
 ```
 
 Outputs are specified by giving a name and a signal.
 
-```
+```ocaml
 let output_b = Signal.output "b" (some_logic input_a)
 ```
 

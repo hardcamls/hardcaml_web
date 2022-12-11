@@ -142,7 +142,7 @@ c = 30
 
 An interface is a grouping of signals with associated names and bit widths.
 
-```
+```ocaml
 # type 'a t =
   { a : 'a[@bits 8]
   ; b : 'a[@bits 7]

@@ -23,7 +23,7 @@ A waveform is created in the normal way by wrapping a simulator with
 
 The following function is used to display the waveform.
 
-```
+```ocaml
 # Hardcaml_waveterm_interactive.run waves
 ```
 
@@ -52,7 +52,7 @@ To help with this, the `Hardcaml_waveterm` library can optionally
 serialize a waveform to disk. It provides an `expect` function which is
 very similar to `Hardcaml_waveterm.Waveform.print`
 
-```
+```ocaml
 Hardcaml_waveterm.Waveform.expect ~serialize_to:"filename" waves
 ```
 

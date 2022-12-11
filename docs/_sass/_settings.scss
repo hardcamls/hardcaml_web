@@ -10,8 +10,10 @@ $page-margin-mobile: 20px;
 $shadow-bottom: 0 2px 5px rgba(0,0,0,.35);
 $shadow-right: 1px 0 3px rgba(0,0,0,.3);
 
-$link-color: #e15ca0;
-$code-link-color: #c50517;
-$code-color: #26b832;
+$link-color: blue;
+//$code-link-color: #c50517;
+//$code-color: #26b832;
+$code-link-color: black; /* This is used for both code blocks and codelinks ... */
+$code-color: black;
 
 $peppermint: #222222;

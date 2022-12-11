@@ -114,7 +114,7 @@ val waves : Waveform.t = <abstr>
 
 Waveforms can be captured as expect test output.
 
-```
+```ocaml
 let%expect_test "counter" =
   let waves = testbench ()
   Waveform.print ~display_height:12 waves

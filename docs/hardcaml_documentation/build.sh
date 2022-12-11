@@ -58,7 +58,7 @@ category: $cat
     echo $name $cat
     echo "$header$(cat $file)" | \
         sed 's/mdx/md/g' |
-        sed 's/ocaml skip//g' > $name.md
+        sed 's/ocaml skip/ocaml/g' > $name.md
 done
 
 rm *.mdx
