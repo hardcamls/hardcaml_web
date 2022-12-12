@@ -56,6 +56,9 @@
   sublinks:
     - title: Fast Simulation
       link: /hardcaml_documentation/accelerating_simulations
+- title: Resources
+  category: resources
+  link: /resources
 - title: Hardcaml on the Web
   sublink_id: "hardcaml-on-the-web-children"
   category: hardcaml-on-the-web
