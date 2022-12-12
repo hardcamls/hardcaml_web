@@ -13,8 +13,8 @@ category: examples
 -->
 
 The following is a simple 8-bit counter. It resets back to 0 when the
-clear signal is high, and counts up when the incr signal is high.
-Otherwise it holds its previous value.
+clear signal is high and counts up when the incr signal is high.
+Otherwise, it holds its previous value.
 
 ## Design
 
@@ -64,11 +64,11 @@ register with feedback. Let's look at each argument in turn.
 - `Reg_spec.t` packages up the `clock` and synchronous clear `signal`.
   There are various other arguments which can control an asynchronous
   reset, rising or falling clock edge and so on.
-- `enable`: when high the register will load a new value. Otherwise it
+- `enable`: when high the register will load a new value. Otherwise, it
   holds its previous value.
 - `width` is the bit width of the register.
 - `f`: this function receives the current value of the
-  register, and computes the next value. In this case it increments it
+  register, and computes the next value. In this case, it increments it
   by one.
 
 ## Testbench
@@ -123,7 +123,7 @@ dout='00000000'
 
 ### With a wire
 
-The following implemention shows what is actually happening within the
+The following implementation shows what is actually happening within the
 `reg_fb` function. First, a wire is created that can be read when we
 construct a register. It is assigned after we have the register
 output.
@@ -162,7 +162,7 @@ We can also describe the counter with the [Always DSL](./always.md).
 
 Note that we could have encoded the clear and increment logic when we
 constructed the `Always.Variable.reg`. The Always fragment would then
-have only consisted of assignment to `dout`.
+have only consisted of an assignment to `dout`.
 
 ```ocaml
 # let counter_with_always (i : _ I.t) =

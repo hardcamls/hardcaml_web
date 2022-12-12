@@ -13,7 +13,7 @@
     - title: Naming
       link: /hardcaml_documentation/naming
     - title: Always API
-      link: /hardcaml_documentation/rtl_generation
+      link: /hardcaml_documentation/always
     - title: Instantiation
       link: /hardcaml_documentation/instantiation
     - title: Circuits

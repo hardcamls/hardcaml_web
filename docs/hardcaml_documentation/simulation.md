@@ -29,7 +29,7 @@ A testbench is used to control the design by:
 
 # Working with simulators
 
-A simulation is built from a circuit as follows. First we will create
+A simulation is built from a circuit as follows. First, we will create
 a trivial circuit.
 
 ```ocaml
@@ -106,21 +106,21 @@ See the pages on [waveforms](waveforms.md) and using the
 
 # Limitations
 
-The simulators provided by Hardcaml are called cycle accurate
-simulators, rather than the more complex event driven simulators
+The simulators provided by Hardcaml are called cycle-accurate
+simulators, rather than the more complex event-driven simulators
 often used for RTL design.
 
-Verilator is an example of a popular cycle accurate simulator, while
-Icarus Verilog and Modelsim are examples of event driven simulators.
+Verilator is an example of a popular cycle-accurate simulator, while
+Icarus Verilog and Modelsim are examples of event-driven simulators.
 
-While event driven simulators are more powerful, for testing standard
+While event-driven simulators are more powerful, for testing standard
 synchronous designs cycle accurate simulators are generally good
-enough, simpler to write testbenchs for and easier to make run
+enough, simpler to write testbenches for and easier to make run
 reasonably fast.
 
 The Hardcaml simulators also add some further restrictions -
 specifically it is possible to (approximately) model multiple clock
-domains with cycle accurate simulators, but we do not currently allow
+domains with cycle-accurate simulators, but we do not currently allow
 that. Further, we do not model different clock edges and assume all
 synchronous logic is triggered on the rising edge.
 

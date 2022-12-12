@@ -1,3 +1,4 @@
 *.bc-for-jsoo
 *.js
 examples/_site
+docs/Gemfile.lock
