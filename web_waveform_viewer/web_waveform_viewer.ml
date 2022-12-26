@@ -72,16 +72,18 @@ let create_update_starting_cycle_button ~update_view (env : Env.t) ~action =
          | Fast_backward icon -> icon)
       ]
   in
-  Ev.listen
-    Ev.click
-    (fun (_ : Ev.Mouse.t Ev.t) ->
-      (match action with
-       | Delta { icon = _; delta } ->
-         Env.update_starting_cycle_with_delta env ~delta:(delta env)
-       | Fast_forward _ -> Env.update_starting_cycle_to_end env
-       | Fast_backward _ -> Env.update_starting_cycle_to_begin env);
-      update_view ())
-    (Ev.target_of_jv (El.to_jv btn));
+  ignore
+    (Ev.listen
+       Ev.click
+       (fun (_ : Ev.Mouse.t Ev.t) ->
+         (match action with
+          | Delta { icon = _; delta } ->
+            Env.update_starting_cycle_with_delta env ~delta:(delta env)
+          | Fast_forward _ -> Env.update_starting_cycle_to_end env
+          | Fast_backward _ -> Env.update_starting_cycle_to_begin env);
+         update_view ())
+       (Ev.target_of_jv (El.to_jv btn))
+      : Ev.listener);
   btn
 ;;
 
@@ -91,31 +93,35 @@ let create_current_cycle_textfield ~update_view (env : Env.t) =
   let textfield =
     El.input ~at:[ At.class' (Jstr.v "textbox"); At.value (Jstr.v "0") ] ()
   in
-  Ev.listen
-    Ev.blur
-    (fun (ev : _ Ev.t) ->
-      Ev.prevent_default ev;
-      let selected_cycle =
-        try
-          El.prop El.Prop.value textfield |> Jstr.to_string |> Int.of_string |> Some
-        with
-        | _ -> None
-      in
-      Option.iter
-        selected_cycle
-        ~f:(Env.update_selected_cycle_and_scroll_so_that_visible env);
-      update_view ())
-    (Ev.target_of_jv (El.to_jv textfield));
-  Ev.listen
-    Ev.keyup
-    (fun (ev : _ Ev.t) ->
-      (* When the user hits the enter button, blur, simulate as if the user
+  ignore
+    (Ev.listen
+       Ev.blur
+       (fun (ev : _ Ev.t) ->
+         Ev.prevent_default ev;
+         let selected_cycle =
+           try
+             El.prop El.Prop.value textfield |> Jstr.to_string |> Int.of_string |> Some
+           with
+           | _ -> None
+         in
+         Option.iter
+           selected_cycle
+           ~f:(Env.update_selected_cycle_and_scroll_so_that_visible env);
+         update_view ())
+       (Ev.target_of_jv (El.to_jv textfield))
+      : Ev.listener);
+  ignore
+    (Ev.listen
+       Ev.keyup
+       (fun (ev : _ Ev.t) ->
+         (* When the user hits the enter button, blur, simulate as if the user
          cliked away
       *)
-      Ev.prevent_default ev;
-      if String.equal "Enter" (Jstr.to_string (Ev.Keyboard.key (Ev.as_type ev)))
-      then blur_el textfield)
-    (Ev.target_of_jv (El.to_jv textfield));
+         Ev.prevent_default ev;
+         if String.equal "Enter" (Jstr.to_string (Ev.Keyboard.key (Ev.as_type ev)))
+         then blur_el textfield)
+       (Ev.target_of_jv (El.to_jv textfield))
+      : Ev.listener);
   textfield
 ;;
 
@@ -128,12 +134,14 @@ let create_zoom_button ~update_view (env : Env.t) in_or_out =
          | `Out -> Icons.zoom_out ())
       ]
   in
-  Ev.listen
-    Ev.click
-    (fun (_ : Ev.Mouse.t Ev.t) ->
-      Env.update_zoom env in_or_out;
-      update_view ())
-    (Ev.target_of_jv (El.to_jv btn));
+  ignore
+    (Ev.listen
+       Ev.click
+       (fun (_ : Ev.Mouse.t Ev.t) ->
+         Env.update_zoom env in_or_out;
+         update_view ())
+       (Ev.target_of_jv (El.to_jv btn))
+      : Ev.listener);
   btn
 ;;
 
@@ -265,10 +273,12 @@ let render
         update_view ())
   in
   set_timeout ~ms:0 ~f:update_canvas_width_on_resize;
-  Ev.listen
-    Ev.resize
-    (fun (_ : _ Ev.t) -> update_canvas_width_on_resize ())
-    (Ev.target_of_jv (Window.to_jv G.window));
+  ignore
+    (Ev.listen
+       Ev.resize
+       (fun (_ : _ Ev.t) -> update_canvas_width_on_resize ())
+       (Ev.target_of_jv (Window.to_jv G.window))
+      : Ev.listener);
   let waves_div = div [ El.div ~at:[ row_style ] columns ] in
   let delta_half_a_page env =
     Int.max 1 ((Env.num_cycles_that_can_fit_in_canvas env + 1) / 2)

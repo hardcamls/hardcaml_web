@@ -39,11 +39,12 @@ module Renderer = struct
   let create_value_to_render
     ~max_width_allowed
     ~value
-    ~ctx
+    ~ctx:_
     ~bits_to_string
     ~(alignment : Text_alignment.t)
     =
-    With_return.with_return (fun { return } ->
+    (* XXX aray: With return seems unused. *)
+    With_return.with_return (fun { return = _ } ->
       let value = bits_to_string value in
       let number_of_characters_that_can_fit =
         let font_width_in_pixels = 0.60 *. Float.of_int Constants.font_size_in_pixels in

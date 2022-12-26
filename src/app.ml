@@ -30,7 +30,10 @@ module Make (Design : Design.S) = struct
       }
 
     let create params =
-      let parameters = try Some (find_id "hardcaml_app-parameters") with _ -> None in
+      let parameters =
+        try Some (find_id "hardcaml_app-parameters") with
+        | _ -> None
+      in
       let apply = El.button [ El.txt' "Apply" ] in
       Option.iter parameters ~f:(fun parameters ->
         El.set_children parameters (List.concat [ params; [ apply ] ]));
@@ -74,12 +77,14 @@ module Make (Design : Design.S) = struct
     let enable_all t = List.iter (all t) ~f:(fun e -> El.set_prop disable_prop false e)
 
     let listen_and_post worker t button msg =
-      Ev.listen
-        Ev.click
-        (fun _ ->
-          Brr_webworkers.Worker.post worker (msg ());
-          disable_all t)
-        (El.as_target button)
+      ignore
+        (Ev.listen
+           Ev.click
+           (fun _ ->
+             Brr_webworkers.Worker.post worker (msg ());
+             disable_all t)
+           (El.as_target button)
+          : Ev.listener)
     ;;
   end
 
@@ -340,29 +345,43 @@ module Make (Design : Design.S) = struct
     let buttons = Control_buttons.create () in
     Control_buttons.listen_and_post worker buttons buttons.utilization (fun () ->
       Messages.App_to_worker.Utilization (parameters ()));
-    Ev.listen Ev.click (generate_ports parameters divs.ports) (El.as_target buttons.ports);
+    ignore
+      (Ev.listen
+         Ev.click
+         (generate_ports parameters divs.ports)
+         (El.as_target buttons.ports)
+        : Ev.listener);
     Control_buttons.listen_and_post worker buttons buttons.simulation (fun () ->
       Messages.App_to_worker.Simulation (parameters ()));
     Control_buttons.listen_and_post worker buttons buttons.rtl (fun () ->
       Messages.App_to_worker.Rtl
         { parameters = parameters (); language = Verilog; hierarchical_rtl = true });
-    Ev.listen
-      Ev.click
-      (fun _ ->
-        Brr_webworkers.Worker.post
-          worker
-          (Messages.App_to_worker.Rtl
-             { parameters = parameters (); language = Verilog; hierarchical_rtl = true }))
-      (El.as_target divs.verilog);
-    Ev.listen
-      Ev.click
-      (fun _ ->
-        Brr_webworkers.Worker.post
-          worker
-          (Messages.App_to_worker.Rtl
-             { parameters = parameters (); language = Vhdl; hierarchical_rtl = true }))
-      (El.as_target divs.vhdl);
-    Ev.listen Ev.click (on_apply worker divs parameters) (El.as_target divs.apply);
+    ignore
+      (Ev.listen
+         Ev.click
+         (fun _ ->
+           Brr_webworkers.Worker.post
+             worker
+             (Messages.App_to_worker.Rtl
+                { parameters = parameters ()
+                ; language = Verilog
+                ; hierarchical_rtl = true
+                }))
+         (El.as_target divs.verilog)
+        : Ev.listener);
+    ignore
+      (Ev.listen
+         Ev.click
+         (fun _ ->
+           Brr_webworkers.Worker.post
+             worker
+             (Messages.App_to_worker.Rtl
+                { parameters = parameters (); language = Vhdl; hierarchical_rtl = true }))
+         (El.as_target divs.vhdl)
+        : Ev.listener);
+    ignore
+      (Ev.listen Ev.click (on_apply worker divs parameters) (El.as_target divs.apply)
+        : Ev.listener);
     El.set_children div_app [ divs.simulation ];
     (* El.set_children divs.control (Control_buttons.all buttons); *)
     on_apply worker divs parameters ();

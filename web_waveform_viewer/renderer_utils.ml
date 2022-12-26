@@ -20,20 +20,22 @@ let draw_selected_cycle (env : Env.t) (canvas : Canvas.t) =
 ;;
 
 let update_current_cycle_on_click ~canvas_el ~update_view ~(env : Env.t) =
-  Brr.Ev.listen
-    Ev.click
-    (fun (ev : Ev.Mouse.t Ev.t) ->
-      let cycle_offset =
-        let ev = Ev.as_type ev in
-        let mouse_x =
-          Ev.Mouse.offset_x ev *. Float.of_int Constants.canvas_scaling_factor
-        in
-        Float.to_int (mouse_x -. Constants.x_offset_to_start_of_signal)
-        / (2 * env.half_cycle_width)
-      in
-      Env.update_selected_cycle env (env.starting_cycle + cycle_offset);
-      update_view ())
-    (Ev.target_of_jv (El.to_jv canvas_el))
+  ignore
+    (Brr.Ev.listen
+       Ev.click
+       (fun (ev : Ev.Mouse.t Ev.t) ->
+         let cycle_offset =
+           let ev = Ev.as_type ev in
+           let mouse_x =
+             Ev.Mouse.offset_x ev *. Float.of_int Constants.canvas_scaling_factor
+           in
+           Float.to_int (mouse_x -. Constants.x_offset_to_start_of_signal)
+           / (2 * env.half_cycle_width)
+         in
+         Env.update_selected_cycle env (env.starting_cycle + cycle_offset);
+         update_view ())
+       (Ev.target_of_jv (El.to_jv canvas_el))
+      : Ev.listener)
 ;;
 
 let wave_data_get_opt data i =

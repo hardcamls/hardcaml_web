@@ -75,7 +75,7 @@ let main () =
       div_bits
       El.[ txt' (Hardcaml.Bits.to_string (Hardcaml.Bits.of_string (Jstr.to_string vl))) ]
   in
-  Ev.listen Ev.change on_change (El.as_target inp);
+  ignore (Ev.listen Ev.change on_change (El.as_target inp) : _);
   Option.iter div ~f:(fun div -> El.set_children div [ div_inp; div_bits; div_canvas ]);
   let* _ = Ev.next Ev.load (Window.as_target G.window) in
   if false then draw canvas;
